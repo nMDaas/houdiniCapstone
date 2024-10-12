@@ -1,68 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
- <class>LinkAssets</class>
- <widget class="QWidget" name="LinkAssets">
+<ui version="4.0" xmlns="http://www.qt.io/ns/ui">
+ <class>ColorsWindow</class>
+ <widget class="QWidget" name="ColorsWindow">
   <property name="geometry">
    <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>241</width>
-    <height>358</height>
+    <x>100</x>
+    <y>100</y>
+    <width>300</width>
+    <height>200</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Link Assets</string>
+   <string>Color Palette</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QLabel" name="label">
-      <property name="minimumSize">
-       <size>
-        <width>60</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>85</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Shot Name</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="linShotName">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QListView" name="listAssets">
-     <property name="selectionMode">
-      <enum>QAbstractItemView::ExtendedSelection</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="btnLinkAssets">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>40</height>
-      </size>
-     </property>
+    <widget class="QPushButton" name="buttonRed">
      <property name="text">
-      <string>Link Selected Assets to the Shot</string>
+      <string>Red</string>
+     </property>
+     <property name="styleSheet">
+      <string>background-color: red; color: white;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="buttonGreen">
+     <property name="text">
+      <string>Green</string>
+     </property>
+     <property name="styleSheet">
+      <string>background-color: green; color: white;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="buttonBlue">
+     <property name="text">
+      <string>Blue</string>
+     </property>
+     <property name="styleSheet">
+      <string>background-color: blue; color: white;</string>
      </property>
     </widget>
    </item>
