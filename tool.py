@@ -1,3 +1,6 @@
+import hou
+from PySide2 import QtCore, QtUiTools, QtWidgets
+from PySide2.QtWidgets import QFileDialog
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -8,6 +11,7 @@ class MyWidget(QtWidgets.QWidget):
         
         #connect buttons to functions
         self.ui.select_button.clicked.connect(selectMap)
+        self.ui.apply_button.clicked.connect(apply)
         
 def selectMap():
     print("hello!")
@@ -23,12 +27,22 @@ def selectMap():
     # Open the dialog in a blocking way (modal)
     if dialog.exec_() == QFileDialog.Accepted:
         filepaths = dialog.selectedFiles()
-        test = "hello it's me"
         print("filename: " + filepaths[0])
     else:
-        print("No folder selected")
+        print("No folder selected")           
     
     global folder_path
+    
+def apply():
+
+    # create terrain Geometry node
+    OBJ = hou.node('/obj/')
+    terrainGeometry = OBJ.createNode('geo')
+    terrainGeometry.setName('terrain', unique_name=True)
         
+    # create grid node in terrain node
+    TERRAIN = hou.node('/obj/terrain')
+    terrainGrid = TERRAIN.createNode('grid')
+    
 win = MyWidget()
 win.show()
