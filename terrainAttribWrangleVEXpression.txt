@@ -1,0 +1,24 @@
+// "mountain" if green range is highest
+int mountain = (@Cd.g > @Cd.r) && (@Cd.g > @Cd.b);
+
+// normalizing rgb values
+float rNorm = @Cd.r / 255;
+float gNorm = @Cd.g / 255;
+float bNorm = @Cd.b / 255;
+// find min and max of normalized values
+float maxNorm = max(rNorm, gNorm, bNorm);
+float minNorm = min(rNorm, gNorm, bNorm);
+// assign value
+float value = maxNorm;
+// calculate saturation
+float saturation = (value - minNorm) / value;
+float saturationPower = pow(saturation, 3.0);
+
+int highMax = 150; 
+
+if (mountain) { 
+    @zextrusion = saturationPower * highMax;
+} 
+else { 
+    @zextrusion = 0.1;
+}
