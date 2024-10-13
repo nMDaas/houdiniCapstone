@@ -2,6 +2,8 @@ import hou
 from PySide2 import QtCore, QtUiTools, QtWidgets
 from PySide2.QtWidgets import QFileDialog
 
+global filepaths
+
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super(MyWidget,self).__init__()
@@ -22,7 +24,7 @@ def selectMap():
     dialog.setDirectory(initial_directory)
     dialog.setWindowTitle("Select Folder")
     
-    global file_path
+    global filepaths
     
     # Open the dialog in a blocking way (modal)
     if dialog.exec_() == QFileDialog.Accepted:
@@ -31,18 +33,27 @@ def selectMap():
     else:
         print("No folder selected")           
     
-    global folder_path
-    
 def apply():
 
     # create terrain Geometry node
     OBJ = hou.node('/obj/')
-    terrainGeometry = OBJ.createNode('geo')
-    terrainGeometry.setName('terrain', unique_name=True)
+    n_terrain = OBJ.createNode('geo', 'terrain')
         
     # create grid node in terrain node
-    TERRAIN = hou.node('/obj/terrain')
-    terrainGrid = TERRAIN.createNode('grid')
+    n_terrainGrid = n_terrain.createNode('grid', 'terrainGrid')
+    hou.parm('/obj/terrain/terrainGrid/sizex').set(500)
+    hou.parm('/obj/terrain/terrainGrid/sizey').set(500)
+    hou.parm('/obj/terrain/terrainGrid/rows').set(150)
+    hou.parm('/obj/terrain/terrainGrid/cols').set(150)
+    
+    #create attribute from parameter node
+    n_attribFromMap = n_terrain.createNode('attribfrommap', 'attribfrommap')
+    global filepaths
+    hou.parm('/obj/terrain/attribfrommap/filename').set(filepaths[0])
+    hou.parm('/obj/terrain/attribfrommap/uv_invertv').set(1)
+    n_attribFromMap.setInput(0, n_terrainGrid)
+     
+    hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
     
 win = MyWidget()
 win.show()
