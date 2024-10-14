@@ -5,6 +5,9 @@ from collections import defaultdict
 
 global filepaths
 
+global numColorGroups
+numColorGroups = 0
+
 def printParms(node):
     for p in node.parms():
         print(p)
@@ -15,6 +18,15 @@ def loadVexString(filename):
         vex_code_string = file.read()
     return vex_code_string
 
+def addColorCodeGroupsToEdit(self):
+    # Add labels and color display frames to the grid layout
+    for i in range(4):  # Adjust the range for the number of rows
+        label = QtWidgets.QLabel(f"Color {i + 1}")
+        color_display_frame = ColorDisplayFrame(self, index=i)  # Custom QFrame
+
+        # Add to grid layout (label on the left, color display frame on the right)
+        self.ui.colorGridLayout.addWidget(label, i + 1, 0)
+        self.ui.colorGridLayout.addWidget(color_display_frame, i + 1, 1)
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -27,14 +39,7 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.select_button.clicked.connect(selectMap)
         self.ui.apply_button.clicked.connect(apply)
         
-        # Add labels and color display frames to the grid layout
-        for i in range(4):  # Adjust the range for the number of rows
-            label = QtWidgets.QLabel(f"Color {i + 1}")
-            color_display_frame = ColorDisplayFrame(self, index=i)  # Custom QFrame
-
-            # Add to grid layout (label on the left, color display frame on the right)
-            self.ui.colorGridLayout.addWidget(label, i, 0)
-            self.ui.colorGridLayout.addWidget(color_display_frame, i, 1)
+        addColorCodeGroupsToEdit(self)
  
 class ColorDisplayFrame(QtWidgets.QFrame):
     def __init__(self, parent=None, index=0):
@@ -50,22 +55,25 @@ class ColorDisplayFrame(QtWidgets.QFrame):
         self.open_color_picker()
 
     def open_color_picker(self):
-        color_dialog = QtWidgets.QColorDialog(self)
+        # Open color picker dialog (non-modal)
+        color_dialog = QtWidgets.QColorDialog(self)  # Ensure it's parented correctly
         color_dialog.setWindowTitle("Select Color")
-        color_dialog.setOption(QtWidgets.QColorDialog.DontUseNativeDialog, False)  
+        color_dialog.setOption(QtWidgets.QColorDialog.DontUseNativeDialog, False)  # Optional, ensures a consistent appearance
         color_dialog.setStyleSheet("") 
         
         color_dialog.show()
 
+        # Handle the accepted signal (non-blocking)
         color_dialog.finished.connect(lambda result: self.handle_color_selection(result, color_dialog))
 
     def handle_color_selection(self, result, color_dialog):
-        if result == QtWidgets.QDialog.Accepted:  
-            color = color_dialog.currentColor()  
+        if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
+            color = color_dialog.currentColor()  # Get the selected color
             if color.isValid():
+                # Update the QFrame (color display box) background to the selected color
                 self.setStyleSheet(f"background-color: {color.name()};")
 
-        color_dialog.deleteLater()  
+        color_dialog.deleteLater()  # Clean up the dialog after use
           
             
 def selectMap():
