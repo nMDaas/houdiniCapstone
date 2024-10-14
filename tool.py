@@ -27,11 +27,47 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.select_button.clicked.connect(selectMap)
         self.ui.apply_button.clicked.connect(apply)
         
-        for i in range(4):  # Adjust the range for the number of buttons you want
-            color_picker_button = QtWidgets.QPushButton(f"Pick Color {i + 1}")
-            color_picker_button.clicked.connect(lambda checked, index=i: self.open_color_dialog(index))
-            self.ui.colorGridLayout.addWidget(color_picker_button, i // 2, i % 2)  # Place button in the grid
+        # Add labels and color display frames to the grid layout
+        for i in range(4):  # Adjust the range for the number of rows
+            label = QtWidgets.QLabel(f"Color {i + 1}")
+            color_display_frame = ColorDisplayFrame(self, index=i)  # Custom QFrame
+
+            # Add to grid layout (label on the left, color display frame on the right)
+            self.ui.colorGridLayout.addWidget(label, i, 0)
+            self.ui.colorGridLayout.addWidget(color_display_frame, i, 1)
+ 
+class ColorDisplayFrame(QtWidgets.QFrame):
+    def __init__(self, parent=None, index=0):
+        super(ColorDisplayFrame, self).__init__(parent)
+        self.index = index
+        self.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.setStyleSheet("background-color: #eb4034;")  # Default color
+        self.setMinimumSize(50, 25)
+
+    # Override mousePressEvent to open a non-modal color picker
+    def mousePressEvent(self, event):
+        self.open_color_picker()
+
+    def open_color_picker(self):
+        color_dialog = QtWidgets.QColorDialog(self)
+        color_dialog.setWindowTitle("Select Color")
+        color_dialog.setOption(QtWidgets.QColorDialog.DontUseNativeDialog, False)  
+        color_dialog.setStyleSheet("") 
         
+        color_dialog.show()
+
+        color_dialog.finished.connect(lambda result: self.handle_color_selection(result, color_dialog))
+
+    def handle_color_selection(self, result, color_dialog):
+        if result == QtWidgets.QDialog.Accepted:  
+            color = color_dialog.currentColor()  
+            if color.isValid():
+                self.setStyleSheet(f"background-color: {color.name()};")
+
+        color_dialog.deleteLater()  
+          
+            
 def selectMap():
     initial_directory = "/Users/natashadaas/houdiniCapstone"  # Replace this with the desired initial directory
     dialog = QFileDialog()
