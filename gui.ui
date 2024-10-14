@@ -54,9 +54,40 @@
                     </widget>
                 </item>
 
+                 <!-- Row 1: Color Picker Button -->
+                <item row="1" column="0">
+                    <widget class="QPushButton" name="color_picker_button">
+                        <property name="text">
+                            <string>Pick Color</string>
+                        </property>
+                    </widget>
+                </item>
+
+                <!-- Row 1: Color Display Box (QFrame) -->
+                <item row="1" column="1">
+                    <widget class="QFrame" name="color_display_frame">
+                        <property name="frameShape">
+                            <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                            <enum>QFrame::Raised</enum>
+                        </property>
+                        <property name="styleSheet">
+                            <string>background-color: #eb4034;</string>
+                        </property>
+                        <property name="minimumSize">
+                            <size>
+                                <width>50</width>
+                                <height>25</height>
+                            </size>
+                        </property>
+                    </widget>
+                </item>
+
             </layout>
         </widget>
 
+        <!-- Apply Button-->
         <widget class="QPushButton" name="apply_button">
             <property name="geometry">
                 <rect>
