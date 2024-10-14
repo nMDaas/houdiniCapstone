@@ -92,9 +92,30 @@ def apply():
     hou.parm('/obj/terrain/polyextrude/localzscaleattrib').set("zextrusion")
     n_polyextrude_terrain.setPosition(hou.Vector2(8, 0)) 
     n_polyextrude_terrain.setInput(0, n_attrib_wrangle)
-    printParms(n_polyextrude_terrain)
     
-    hou.node('/obj/terrain/attribwrangle').setDisplayFlag(True)
+    # create heightfield node
+    n_heightfield = n_terrain.createNode("heightfield", "heightfield")
+    hou.parm('/obj/terrain/heightfield/sizex').set(500)
+    hou.parm('/obj/terrain/heightfield/sizey').set(500)
+    
+    # create heightfield project node
+    n_heightfield_project = n_terrain.createNode("heightfield_project", "heightfield_project")
+    n_heightfield_project.setInput(0, n_heightfield)
+    n_heightfield_project.setInput(1, n_polyextrude_terrain)
+    
+    # create heightfield blur node
+    n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
+    hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
+    n_heightfield_blur.setInput(0, n_heightfield_project)
+    
+    # create heightfield noise node
+    n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
+    hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
+    n_heightfield_noise.setInput(0, n_heightfield_blur)
+    
+    printParms(n_heightfield_noise)
+    
+    hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
     
     n_terrain.layoutChildren()
      
