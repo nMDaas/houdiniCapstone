@@ -18,7 +18,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>30</y>
+                    <y>0</y>
                     <width>361</width>
                     <height>100</height>
                 </rect>
@@ -42,15 +42,6 @@
                     <widget class="QPushButton" name="select_button">
                         <property name="text">
                             <string>Select</string>
-                        </property>
-                    </widget>
-                </item>
-
-                <!-- row 1 -->
-                <item row="1" column="0">
-                    <widget class="QLabel" name="label">
-                        <property name="text">
-                            <string>Edit Colors Found: </string>
                         </property>
                     </widget>
                 </item>
@@ -83,6 +74,14 @@
                 </rect>
             </property>
             <layout class="QGridLayout" name="colorGridLayout">
+                <!-- row 0 -->
+                <item row="0" column="0">
+                    <widget class="QLabel" name="label">
+                        <property name="text">
+                            <string>Edit Colors Found: </string>
+                        </property>
+                    </widget>
+                </item>
             </layout>
         </widget>
 
