@@ -1,6 +1,6 @@
 import hou
 from PySide2 import QtCore, QtUiTools, QtWidgets
-from PySide2.QtWidgets import QFileDialog
+from PySide2.QtWidgets import QFileDialog, QPushButton
 from collections import defaultdict
 
 global filepaths
@@ -26,6 +26,11 @@ class MyWidget(QtWidgets.QWidget):
         #connect buttons to functions
         self.ui.select_button.clicked.connect(selectMap)
         self.ui.apply_button.clicked.connect(apply)
+        
+        for i in range(4):  # Adjust the range for the number of buttons you want
+            color_picker_button = QtWidgets.QPushButton(f"Pick Color {i + 1}")
+            color_picker_button.clicked.connect(lambda checked, index=i: self.open_color_dialog(index))
+            self.ui.colorGridLayout.addWidget(color_picker_button, i // 2, i % 2)  # Place button in the grid
         
 def selectMap():
     initial_directory = "/Users/natashadaas/houdiniCapstone"  # Replace this with the desired initial directory
