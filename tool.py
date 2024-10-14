@@ -1,6 +1,7 @@
 import hou
 from PySide2 import QtCore, QtUiTools, QtWidgets
 from PySide2.QtWidgets import QFileDialog
+from collections import defaultdict
 
 global filepaths
 
@@ -41,8 +42,42 @@ def selectMap():
         filepaths = dialog.selectedFiles()
         print("filename: " + filepaths[0])
     else:
-        print("No folder selected")           
+        print("No folder selected")   
+        
+def getAttribMapColors(node):
+    node = node.geometry()
+    color_attribute = node.pointFloatAttribValues("Cd")
+    numCdComponents = 3  # RGB
+
+    # Create a list of color_attribute grouped into RGB colors for each grid cell
+    color_tuples = [
+        tuple(color_attribute[i:i + numCdComponents])
+        for i in range(0, len(color_attribute), numCdComponents)
+    ]
+
+    # Dictionary to count occurrences of each scaled color
+    color_groups = defaultdict(int)
     
+    # Count occurrences of each color after multiplying by 255 and rounding to 0 decimal points
+    for color in color_tuples:
+        # Multiply by 255 and round to 0 decimal points
+        scaled_color = tuple(round(c * 255) for c in color)  
+        color_groups[scaled_color] += 1
+
+    # Print scaled colors and their counts
+    # Filter for counts >= 20 (this gets the main color codes used in the picture)
+    print("\nScaled Color Groups and Counts (Count >= 20):")
+    for scaled_color, count in color_groups.items():
+        if count >= 20:
+            print(f"Scaled Color: {scaled_color}, Count: {count}")
+            
+    print("\n")
+            
+    print("\nScaled Color Groups and Counts (Count < 20):")
+    for scaled_color, count in color_groups.items():
+        if count < 20:
+            print(f"Scaled Color: {scaled_color}, Count: {count}")
+        
 def apply():
 
     # create terrain Geometry node
@@ -60,11 +95,13 @@ def apply():
     # create attribute from parameter node
     n_attribFromMap = n_terrain.createNode('attribfrommap', 'attribfrommap')
     global filepaths
-    deleteThisPLEASE = "/Users/natashadaas/houdiniCapstone/inputImages/imageNoLand.jpg"
+    deleteThisPLEASE = "/Users/natashadaas/houdiniCapstone/inputImages/colorGroupingTestImage.jpg"
     hou.parm('/obj/terrain/attribfrommap/filename').set(deleteThisPLEASE)
     hou.parm('/obj/terrain/attribfrommap/uv_invertv').set(1)
+    hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
     n_attribFromMap.setPosition(hou.Vector2(2, 0)) 
     n_attribFromMap.setInput(0, n_terrainGrid)
+    #printParms(n_attribFromMap)
     
     # create attribute promote node
     n_attrib_promote = n_terrain.createNode("attribpromote", "attribpromote")
@@ -113,11 +150,11 @@ def apply():
     hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
     n_heightfield_noise.setInput(0, n_heightfield_blur)
     
-    printParms(n_heightfield_noise)
-    
     hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
     
     n_terrain.layoutChildren()
+    
+    getAttribMapColors(n_attribFromMap)
      
     
 win = MyWidget()
