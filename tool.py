@@ -19,6 +19,10 @@ def loadVexString(filename):
         vex_code_string = file.read()
     return vex_code_string
 
+def printHexColors():
+    for i in range(len(hexColorCodeGroups)):
+        print(f"{i}: {hexColorCodeGroups[i]}")
+
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
     for i in range(len(hexColorCodeGroups)):  # Adjust the range for the number of rows
@@ -180,6 +184,13 @@ class ColorDisplayFrame(QtWidgets.QFrame):
             if color.isValid():
                 # Update the QFrame (color display box) background to the selected color
                 self.setStyleSheet(f"background-color: {color.name()};")
+
+
+                printHexColors()
+                print("\n")
+                global hexColorCodeGroups
+                hexColorCodeGroups[self.index] = color.name() 
+                printHexColors()
 
         color_dialog.deleteLater()  # Clean up the dialog after use
           
