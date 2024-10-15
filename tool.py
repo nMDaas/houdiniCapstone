@@ -3,6 +3,9 @@ from PySide2 import QtCore, QtUiTools, QtWidgets
 from PySide2.QtWidgets import QFileDialog
 from collections import defaultdict
 
+global initial_directory
+initial_directory = "/Users/natashadaas/houdiniCapstone/inputImages/"
+
 global filepaths
 filepaths = []
 
@@ -90,27 +93,33 @@ class MyWidget(QtWidgets.QWidget):
         global n_attribFromMap
         n_attribFromMap = n_terrain.createNode('attribfrommap', 'attribfrommap')
         global filepaths
-        deleteThisPLEASE = filepaths[0]
-        hou.parm('/obj/terrain/attribfrommap/filename').set(deleteThisPLEASE)
+        hou.parm('/obj/terrain/attribfrommap/filename').set(filepaths[0])
         hou.parm('/obj/terrain/attribfrommap/uv_invertv').set(1)
         hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
         n_attribFromMap.setPosition(hou.Vector2(2, 0)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
+
+        # Create Python node 
+        n_python = n_terrain.createNode('python', 'python')
+        pythonScript = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/pythonScript.txt')
+        hou.parm('/obj/terrain/python/python').set(pythonScript)
+        n_python.setPosition(hou.Vector2(4, 0))
+        n_python.setInput(0, n_attribFromMap)
 
         # Create attribute promote node
         n_attrib_promote = n_terrain.createNode("attribpromote", "attribpromote")
         hou.parm('/obj/terrain/attribpromote/inname').set("Cd")
         hou.parm('/obj/terrain/attribpromote/outclass').set(1)
         hou.parm('/obj/terrain/attribpromote/deletein').set(0)
-        n_attrib_promote.setPosition(hou.Vector2(4, 0)) 
-        n_attrib_promote.setInput(0, n_attribFromMap)
+        n_attrib_promote.setPosition(hou.Vector2(6, 0)) 
+        n_attrib_promote.setInput(0, n_python)
 
         # Create attribute wrangle node
         n_attrib_wrangle = n_terrain.createNode('attribwrangle', 'attribwrangle')
         hou.parm('/obj/terrain/attribwrangle/class').set(1)
-        terrainAttribWrangleVEXpression = loadVexString('/Users/natashadaas/houdiniCapstone/terrainAttribWrangleVEXpression.txt')
+        terrainAttribWrangleVEXpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainAttribWrangleVEXpression.txt')
         hou.parm('/obj/terrain/attribwrangle/snippet').set(terrainAttribWrangleVEXpression)
-        n_attrib_promote.setPosition(hou.Vector2(6, 0)) 
+        n_attrib_promote.setPosition(hou.Vector2(8, 0)) 
         n_attrib_wrangle.setInput(0, n_attrib_promote)
 
         # Create polyextrude node
@@ -120,7 +129,7 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/polyextrude/outputback').set(1)
         hou.parm('/obj/terrain/polyextrude/uselocalzscaleattrib').set(1)
         hou.parm('/obj/terrain/polyextrude/localzscaleattrib').set("zextrusion")
-        n_polyextrude_terrain.setPosition(hou.Vector2(8, 0)) 
+        n_polyextrude_terrain.setPosition(hou.Vector2(10, 0)) 
         n_polyextrude_terrain.setInput(0, n_attrib_wrangle)
         
         # Create heightfield node
@@ -225,7 +234,7 @@ class ColorDisplayFrame(QtWidgets.QFrame):
         color_dialog.deleteLater()  # Clean up the dialog after use
           
 def selectMap():
-    initial_directory = "/Users/natashadaas/houdiniCapstone/inputImages/"
+    global initial_directory
     filepath, _ = QFileDialog.getOpenFileName(None, "Select Image", initial_directory, "Images (*.png *.jpg *.bmp)")
     if filepath:
         print(f"Selected file: {filepath}")

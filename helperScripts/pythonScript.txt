@@ -1,0 +1,11 @@
+# Move Points Up
+node = hou.pwd()
+geo = node.geometry()
+
+color_attribute = list(geo.pointFloatAttribValues("Cd"))
+
+#Add code to modify contents of geo
+For i in range(len(color_attribute)):
+	color_attribute[i] = 0.01
+
+geo.setPointFloatAttribValues("Cd",tuple(color_attribute))
