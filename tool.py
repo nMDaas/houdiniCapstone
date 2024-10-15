@@ -4,9 +4,10 @@ from PySide2.QtWidgets import QFileDialog
 from collections import defaultdict
 
 global filepaths
+filepaths = []
 
-global numColorGroups
-numColorGroups = 0
+global colorCodeGroups 
+colorCodeGroups = []
 
 def printParms(node):
     for p in node.parms():
@@ -20,9 +21,9 @@ def loadVexString(filename):
 
 def addColorCodeGroupsToEdit(self):
     # Add labels and color display frames to the grid layout
-    for i in range(numColorGroups):  # Adjust the range for the number of rows
+    for i in range(len(colorCodeGroups)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"Color {i + 1}")
-        color_display_frame = ColorDisplayFrame(self, index=i)  # Custom QFrame
+        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=colorCodeGroups[i])  # Custom QFrame
 
         # Add to grid layout (label on the left, color display frame on the right)
         self.ui.colorGridLayout.addWidget(label, i + 1, 0)
@@ -55,7 +56,7 @@ class MyWidget(QtWidgets.QWidget):
         # Create attribute from parameter node
         n_attribFromMap = n_terrain.createNode('attribfrommap', 'attribfrommap')
         global filepaths
-        deleteThisPLEASE = "/Users/natashadaas/houdiniCapstone/inputImages/colorGroupingTestImage.jpg"
+        deleteThisPLEASE = filepaths[0]
         hou.parm('/obj/terrain/attribfrommap/filename').set(deleteThisPLEASE)
         hou.parm('/obj/terrain/attribfrommap/uv_invertv').set(1)
         hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
@@ -115,6 +116,11 @@ class MyWidget(QtWidgets.QWidget):
         # Call getAttribMapColors with self
         getAttribMapColors(self, n_attribFromMap)
 
+def rgb_to_hex(rgb_tuple):
+    # get r, g and b values in 0-255 range from rgb_tuple
+    r, g, b = [int(c) for c in rgb_tuple]
+    return f'#{r:02X}{g:02X}{b:02X}'
+
 def getAttribMapColors(self, node):
     node = node.geometry()
     color_attribute = node.pointFloatAttribValues("Cd")
@@ -134,24 +140,22 @@ def getAttribMapColors(self, node):
         # Multiply by 255 and round to 0 decimal points
         scaled_color = tuple(round(c * 255) for c in color)  
         color_groups[scaled_color] += 1
-
-    countMainColors = 0
+    global colorCodeGroups
+    
     for scaled_color, count in color_groups.items():
         if count >= 20:
-            countMainColors += 1
-            print(f"Scaled Color: {scaled_color}, Count: {count}")
+            colorCodeGroups.append(rgb_to_hex(scaled_color).strip())
+            #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
             
-    global numColorGroups
-    numColorGroups = countMainColors
     addColorCodeGroupsToEdit(self)
 
 class ColorDisplayFrame(QtWidgets.QFrame):
-    def __init__(self, parent=None, index=0):
+    def __init__(self, parent=None, index=0, frameColor="#FFFFFF"):
         super(ColorDisplayFrame, self).__init__(parent)
         self.index = index
         self.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.setStyleSheet("background-color: #eb4034;")  # Default color
+        self.setStyleSheet(f"background-color: {frameColor};")  # Default color
         self.setMinimumSize(50, 25)
 
     # Override mousePressEvent to open a non-modal color picker
@@ -185,7 +189,7 @@ def selectMap():
     if filepath:
         print(f"Selected file: {filepath}")
         global filepaths
-        filepaths = filepath
+        filepaths.append(filepath)
 
 # Show the widget
 def show_widget():
