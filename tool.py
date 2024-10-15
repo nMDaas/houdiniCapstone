@@ -6,8 +6,8 @@ from collections import defaultdict
 global filepaths
 filepaths = []
 
-global colorCodeGroups 
-colorCodeGroups = []
+global hexColorCodeGroups 
+hexColorCodeGroups = []
 
 def printParms(node):
     for p in node.parms():
@@ -19,11 +19,11 @@ def loadVexString(filename):
         vex_code_string = file.read()
     return vex_code_string
 
-def addColorCodeGroupsToEdit(self):
+def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
-    for i in range(len(colorCodeGroups)):  # Adjust the range for the number of rows
+    for i in range(len(hexColorCodeGroups)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"Color {i + 1}")
-        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=colorCodeGroups[i])  # Custom QFrame
+        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=hexColorCodeGroups[i])  # Custom QFrame
 
         # Add to grid layout (label on the left, color display frame on the right)
         self.ui.colorGridLayout.addWidget(label, i + 1, 0)
@@ -140,14 +140,14 @@ def getAttribMapColors(self, node):
         # Multiply by 255 and round to 0 decimal points
         scaled_color = tuple(round(c * 255) for c in color)  
         color_groups[scaled_color] += 1
-    global colorCodeGroups
+    global hexColorCodeGroups
     
     for scaled_color, count in color_groups.items():
         if count >= 20:
-            colorCodeGroups.append(rgb_to_hex(scaled_color).strip())
+            hexColorCodeGroups.append(rgb_to_hex(scaled_color).strip())
             #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
             
-    addColorCodeGroupsToEdit(self)
+    addHexColorCodeGroupsToGUI(self)
 
 class ColorDisplayFrame(QtWidgets.QFrame):
     def __init__(self, parent=None, index=0, frameColor="#FFFFFF"):
