@@ -7,7 +7,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>463</width>
-                <height>400</height>
+                <height>600</height>
             </rect>
         </property>
         <property name="windowTitle">
@@ -102,6 +102,20 @@
                     </widget>
                 </item>
             </layout>
+        </widget>
+
+         <widget class="QPushButton" name="update_attrib_map_colors_button">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>550</y>
+                    <width>120</width>
+                    <height>32</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Update Colors</string>
+            </property>
         </widget>
 
     </widget>

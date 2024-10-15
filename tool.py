@@ -6,8 +6,18 @@ from collections import defaultdict
 global filepaths
 filepaths = []
 
+global n_attribFromMap
+
 global hexColorCodeGroups 
 hexColorCodeGroups = []
+
+global color_tuples
+color_tuples = []
+
+global oldColor
+global newColor
+oldColor = "#FFFFFF"
+newColor = "#FFFFFF"
 
 def printParms(node):
     for p in node.parms():
@@ -23,6 +33,21 @@ def printHexColors():
     for i in range(len(hexColorCodeGroups)):
         print(f"{i}: {hexColorCodeGroups[i]}")
 
+def rgb_to_hex(rgb_tuple):
+    # get r, g and b values in 0-255 range from rgb_tuple
+    r, g, b = [int(c) for c in rgb_tuple]
+    return f'#{r:02X}{g:02X}{b:02X}'
+
+def hexToRGB(hex_color):
+    """Convert a hex color string to an RGB tuple."""
+    print("hex_color: ", hex_color)
+    hex_color = hex_color.lstrip('#')  # Remove '#' if present
+    # Check that the length of the hex color is valid
+    if len(hex_color) == 6:
+        return tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+    else:
+        raise ValueError("Invalid hex color format: must be a 6-digit hex string.")
+
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
     for i in range(len(hexColorCodeGroups)):  # Adjust the range for the number of rows
@@ -33,6 +58,9 @@ def addHexColorCodeGroupsToGUI(self):
         self.ui.colorGridLayout.addWidget(label, i + 1, 0)
         self.ui.colorGridLayout.addWidget(color_display_frame, i + 1, 1)
 
+def updateAttribMapColors():
+    print("update")
+
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super(MyWidget, self).__init__()
@@ -42,7 +70,8 @@ class MyWidget(QtWidgets.QWidget):
         
         # Connect buttons to functions
         self.ui.select_button.clicked.connect(selectMap)
-        self.ui.apply_button.clicked.connect(self.apply)  # Update here to use self.apply
+        self.ui.apply_button.clicked.connect(self.apply)
+        self.ui.update_attrib_map_colors_button.clicked.connect(updateAttribMapColors)
 
     def apply(self):
         # Create terrain Geometry node
@@ -58,6 +87,7 @@ class MyWidget(QtWidgets.QWidget):
         n_terrainGrid.setPosition(hou.Vector2(0, 0))  
         
         # Create attribute from parameter node
+        global n_attribFromMap
         n_attribFromMap = n_terrain.createNode('attribfrommap', 'attribfrommap')
         global filepaths
         deleteThisPLEASE = filepaths[0]
@@ -113,17 +143,12 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
         n_heightfield_noise.setInput(0, n_heightfield_blur)
         
-        hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
+        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
         
         n_terrain.layoutChildren()
         
         # Call getAttribMapColors with self
         getAttribMapColors(self, n_attribFromMap)
-
-def rgb_to_hex(rgb_tuple):
-    # get r, g and b values in 0-255 range from rgb_tuple
-    r, g, b = [int(c) for c in rgb_tuple]
-    return f'#{r:02X}{g:02X}{b:02X}'
 
 def getAttribMapColors(self, node):
     node = node.geometry()
@@ -161,6 +186,7 @@ class ColorDisplayFrame(QtWidgets.QFrame):
         self.setFrameShadow(QtWidgets.QFrame.Raised)
         self.setStyleSheet(f"background-color: {frameColor};")  # Default color
         self.setMinimumSize(50, 25)
+        self.frameColor = frameColor
 
     # Override mousePressEvent to open a non-modal color picker
     def mousePressEvent(self, event):
@@ -180,6 +206,8 @@ class ColorDisplayFrame(QtWidgets.QFrame):
 
     def handle_color_selection(self, result, color_dialog):
         if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
+            global oldColor
+            oldColor = self.frameColor
             color = color_dialog.currentColor()  # Get the selected color
             if color.isValid():
                 # Update the QFrame (color display box) background to the selected color
@@ -187,9 +215,11 @@ class ColorDisplayFrame(QtWidgets.QFrame):
 
 
                 printHexColors()
-                print("\n")
+                print(f"\n index: {self.index}")
                 global hexColorCodeGroups
                 hexColorCodeGroups[self.index] = color.name() 
+                global newColor
+                newColor = color.name()
                 printHexColors()
 
         color_dialog.deleteLater()  # Clean up the dialog after use
