@@ -17,11 +17,6 @@ hexColorCodeGroups = []
 global color_tuples
 color_tuples = []
 
-global oldColor
-global newColor
-oldColor = "#FFFFFF"
-newColor = "#FFFFFF"
-
 def printParms(node):
     for p in node.parms():
         print(p)
@@ -63,6 +58,69 @@ def addHexColorCodeGroupsToGUI(self):
 
 def updateAttribMapColors():
     print("update")
+
+def updatePythonScript(oldColor, newColor):
+    file_path = '/Users/natashadaas/houdiniCapstone/helperScripts/pythonScript.txt'
+
+    # add inputs
+    inputs = """    # inputs
+oldColorHex = f'{oldColor}'
+newColorHex = f'{newColor}'
+"""
+
+    # extract geo
+    extractGeo = """ # extract geo 
+node = hou.pwd()
+geo = node.geometry()
+color_attribute = list(geo.pointFloatAttribValues("Cd"))
+"""
+
+    # base code
+    baseCode = """ #Add code to modify contents of geo
+For i in range(len(color_attribute)):
+	float r = color_attribute[i]
+	float g = color_attribute[i+1]
+	float b = color_attribute[i+2]
+
+	float r255 = round(r * 255)
+	float g255 = round(g * 255)
+	float b255 = round(b * 255)
+
+	hex = f'#{r:02X}{g:02X}{b:02X}'
+
+	i++
+	i++
+	i++
+	if (true) {
+		# do nothing
+	}
+"""
+
+    # continue adding else ifs
+
+    # Read the existing content of the file
+    with open(file_path, 'r') as file:
+        content = file.readlines()
+    
+    # Check if there are enough lines to modify
+    if not content:
+        print("The file is empty.")
+        return
+
+    # Remove the last line from the content
+    last_line = content.pop()  # Remove the last line
+
+    # Append the new else if code
+    content.append(new_code)
+
+    # Re-add the last line back
+    content.append(last_line)
+
+    # Write the updated content back to the file
+    with open(file_path, 'w') as file:
+        file.writelines(content)
+
+    print(f"Appended 'else if' statement to {file_path} and re-added the last line.")
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -215,7 +273,6 @@ class ColorDisplayFrame(QtWidgets.QFrame):
 
     def handle_color_selection(self, result, color_dialog):
         if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
-            global oldColor
             oldColor = self.frameColor
             color = color_dialog.currentColor()  # Get the selected color
             if color.isValid():
@@ -227,8 +284,9 @@ class ColorDisplayFrame(QtWidgets.QFrame):
                 print(f"\n index: {self.index}")
                 global hexColorCodeGroups
                 hexColorCodeGroups[self.index] = color.name() 
-                global newColor
                 newColor = color.name()
+
+                updatePythonScript(oldColor, newColor)
                 printHexColors()
 
         color_dialog.deleteLater()  # Clean up the dialog after use

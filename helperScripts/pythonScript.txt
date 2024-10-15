@@ -1,11 +1,43 @@
-# Move Points Up
+# inputs
+oldColorHex = #FFFFFF
+newColorHex = #FFFFFF
+
+# convert input to rgb
+oldStripped = oldColorHex.lstrip('#')
+oldColorRGB = tuple(int(oldStripped[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+newStripped = newColorHex.lstrip('#')
+newColorRGB = tuple(int(newStripped[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+
+# extract geo 
 node = hou.pwd()
 geo = node.geometry()
-
 color_attribute = list(geo.pointFloatAttribValues("Cd"))
 
 #Add code to modify contents of geo
 For i in range(len(color_attribute)):
-	color_attribute[i] = 0.01
+	float r = color_attribute[i]
+	float g = color_attribute[i+1]
+	float b = color_attribute[i+2]
 
+	float r255 = round(r * 255)
+	float g255 = round(g * 255)
+	float b255 = round(b * 255)
+
+	hex = f'#{r:02X}{g:02X}{b:02X}'
+
+	i++
+	i++
+	i++
+	if (true) {
+		# do nothing
+	}
+
+	# keep adding else if 
+	else if (hex == oldColorHex) {
+		color_attribute[i] = newColorRGB[0]
+		color_attribute[i] = newColorRGB[1]
+		color_attribute[i] = newColorRGB[2]
+	}
+
+# finish
 geo.setPointFloatAttribValues("Cd",tuple(color_attribute))
