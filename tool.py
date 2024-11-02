@@ -17,6 +17,9 @@ terrainColorsInHex = []
 global color_tuples
 color_tuples = []
 
+global terrain_parts_wrangle_nodes
+terrain_parts_wrangle_nodes = []
+
 def printParms(node):
     for p in node.parms():
         print(p)
@@ -109,10 +112,12 @@ class MyWidget(QtWidgets.QWidget):
         n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
 
-        # Call getAttribMapColors with self
+        # Call getAttribMapColors with self - display different colors found and populate terrainColorsInHex
         getAttribMapColors(self, n_attribFromMap)
 
+        # Create attribute wrangle node for each color
         global terrainColorsInHex
+        global terrain_parts_wrangle_nodes
         for i in range(len(terrainColorsInHex)):
             attrib_wrangle_name = 'attribwrangle' + str(i)
             new_attrib_wrangle = n_terrain.createNode('attribwrangle', attrib_wrangle_name)
@@ -122,21 +127,28 @@ class MyWidget(QtWidgets.QWidget):
             hou.parm(f'/obj/terrain/{new_attrib_wrangle}/snippet').set(vexExpression)
             new_attrib_wrangle.setPosition(hou.Vector2(i*2, -4)) 
             new_attrib_wrangle.setInput(0, n_attribFromMap)
+            terrain_parts_wrangle_nodes.append(new_attrib_wrangle)
 
-        """
+        # Create object merge node to merge back all colors together, ready for extrusion
+        n_merge_colors = n_terrain.createNode('merge', "merge_colors")
+        for i in range(len(terrainColorsInHex)):
+            attribWrangleNode = hou.node(f'/obj/terrain/attribwrangle{i}/')
+            n_merge_colors.setInput(i, attribWrangleNode)
+        n_merge_colors.setPosition(hou.Vector2(0,-6))
+
         # Create attribute promote node
         n_attrib_promote = n_terrain.createNode("attribpromote", "attribpromote")
         hou.parm('/obj/terrain/attribpromote/inname').set("Cd")
         hou.parm('/obj/terrain/attribpromote/outclass').set(1)
         hou.parm('/obj/terrain/attribpromote/deletein').set(0)
         n_attrib_promote.setPosition(hou.Vector2(6, 0)) 
-        n_attrib_promote.setInput(0, n_attribFromMap)
+        n_attrib_promote.setInput(0, n_merge_colors)
 
         # Create attribute wrangle node
         n_attrib_wrangle = n_terrain.createNode('attribwrangle', 'attribwrangleforextrusion')
-        hou.parm('/obj/terrain/attribwrangle/class').set(1)
+        hou.parm('/obj/terrain/attribwrangleforextrusion/class').set(1)
         terrainAttribWrangleVEXpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainAttribWrangleVEXpression.txt')
-        hou.parm('/obj/terrain/attribwrangle/snippet').set(terrainAttribWrangleVEXpression)
+        hou.parm('/obj/terrain/attribwrangleforextrusion/snippet').set(terrainAttribWrangleVEXpression)
         n_attrib_promote.setPosition(hou.Vector2(8, 0)) 
         n_attrib_wrangle.setInput(0, n_attrib_promote)
 
@@ -173,7 +185,6 @@ class MyWidget(QtWidgets.QWidget):
         hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
         
         n_terrain.layoutChildren()
-        """
         
 
 def getAttribMapColors(self, node):
