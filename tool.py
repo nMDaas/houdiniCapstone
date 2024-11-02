@@ -129,10 +129,23 @@ class MyWidget(QtWidgets.QWidget):
             new_attrib_wrangle.setInput(0, n_attribFromMap)
             terrain_parts_wrangle_nodes.append(new_attrib_wrangle)
 
+        # Create color node for each color and attach it to its attribute wrangle node
+        for i in range(len(terrainColorsInHex)):
+            color_name = 'color' + str(i)
+            new_color_node = n_terrain.createNode("color", color_name)
+            sectionRGBColors = hexToRGB(terrainColorsInHex[i])
+            rScaledDown = round(sectionRGBColors[0]/255,2)
+            gScaledDown = round(sectionRGBColors[1]/255,2)
+            bScaledDown = round(sectionRGBColors[2]/255,2)
+            new_color_node.parmTuple("color").set((rScaledDown, gScaledDown, bScaledDown))
+            new_color_node.setPosition(hou.Vector2(i*2, -6)) 
+            targetAttribNode = hou.node(f'/obj/terrain/attribwrangle{i}')
+            new_color_node.setInput(0, targetAttribNode)
+
         # Create object merge node to merge back all colors together, ready for extrusion
         n_merge_colors = n_terrain.createNode('merge', "merge_colors")
         for i in range(len(terrainColorsInHex)):
-            attribWrangleNode = hou.node(f'/obj/terrain/attribwrangle{i}/')
+            attribWrangleNode = hou.node(f'/obj/terrain/color{i}/')
             n_merge_colors.setInput(i, attribWrangleNode)
         n_merge_colors.setPosition(hou.Vector2(0,-6))
 
@@ -256,7 +269,6 @@ class ColorDisplayFrame(QtWidgets.QFrame):
                 terrainColorsInHex[self.index] = color.name() 
                 newColor = color.name()
 
-                #updatePythonScript(oldColor, newColor)
                 printHexColors()
 
         color_dialog.deleteLater()  # Clean up the dialog after use
