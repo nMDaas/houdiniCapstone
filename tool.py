@@ -11,8 +11,8 @@ filepaths = []
 
 global n_attribFromMap
 
-global hexColorCodeGroups 
-hexColorCodeGroups = []
+global terrainColorsInHex 
+terrainColorsInHex = []
 
 global color_tuples
 color_tuples = []
@@ -28,8 +28,8 @@ def loadVexString(filename):
     return vex_code_string
 
 def printHexColors():
-    for i in range(len(hexColorCodeGroups)):
-        print(f"{i}: {hexColorCodeGroups[i]}")
+    for i in range(len(terrainColorsInHex)):
+        print(f"{i}: {terrainColorsInHex[i]}")
 
 def rgb_to_hex(rgb_tuple):
     # get r, g and b values in 0-255 range from rgb_tuple
@@ -48,9 +48,9 @@ def hexToRGB(hex_color):
 
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
-    for i in range(len(hexColorCodeGroups)):  # Adjust the range for the number of rows
+    for i in range(len(terrainColorsInHex)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"Color {i + 1}")
-        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=hexColorCodeGroups[i])  # Custom QFrame
+        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
 
         # Add to grid layout (label on the left, color display frame on the right)
         self.ui.colorGridLayout.addWidget(label, i + 1, 0)
@@ -59,68 +59,20 @@ def addHexColorCodeGroupsToGUI(self):
 def updateAttribMapColors():
     print("update")
 
-def updatePythonScript(oldColor, newColor):
-    file_path = '/Users/natashadaas/houdiniCapstone/helperScripts/pythonScript.txt'
-
-    # add inputs
-    inputs = """    # inputs
-oldColorHex = f'{oldColor}'
-newColorHex = f'{newColor}'
-"""
-
-    # extract geo
-    extractGeo = """ # extract geo 
-node = hou.pwd()
-geo = node.geometry()
-color_attribute = list(geo.pointFloatAttribValues("Cd"))
-"""
-
-    # base code
-    baseCode = """ #Add code to modify contents of geo
-For i in range(len(color_attribute)):
-	float r = color_attribute[i]
-	float g = color_attribute[i+1]
-	float b = color_attribute[i+2]
-
-	float r255 = round(r * 255)
-	float g255 = round(g * 255)
-	float b255 = round(b * 255)
-
-	hex = f'#{r:02X}{g:02X}{b:02X}'
-
-	i++
-	i++
-	i++
-	if (true) {
-		# do nothing
-	}
-"""
-
-    # continue adding else ifs
-
-    # Read the existing content of the file
-    with open(file_path, 'r') as file:
-        content = file.readlines()
+def generateTerrainColorSectionExtractionVEXExpression(hexColor):
+    sectionRGBColors = hexToRGB(hexColor)
+    rScaledDown = sectionRGBColors[0]/255
+    gScaledDown = sectionRGBColors[1]/255
+    bScaledDown = sectionRGBColors[2]/255
+    targetValuesSetUp = f"float targetR = {rScaledDown};\nfloat targetG = {gScaledDown};\nfloat targetB = {bScaledDown};\n"
+    differenceValuesSetUp = "float differenceR = @Cd.r - targetR;\nfloat differenceG = @Cd.g - targetG;\nfloat differenceB = @Cd.b - targetB;\n"
+    conditionSetUp = "if (!(differenceR < 0.1 && differenceR > -0.1 && differenceG < 0.1 && differenceG > -0.1 && differenceB < 0.1 && differenceB > -0.1)) {"
+    conditionEnd = "\n\tremovepoint(0,@ptnum);\n}"
     
-    # Check if there are enough lines to modify
-    if not content:
-        print("The file is empty.")
-        return
-
-    # Remove the last line from the content
-    last_line = content.pop()  # Remove the last line
-
-    # Append the new else if code
-    content.append(new_code)
-
-    # Re-add the last line back
-    content.append(last_line)
-
-    # Write the updated content back to the file
-    with open(file_path, 'w') as file:
-        file.writelines(content)
-
-    print(f"Appended 'else if' statement to {file_path} and re-added the last line.")
+    fileContent = targetValuesSetUp + differenceValuesSetUp + conditionSetUp + conditionEnd
+    
+    with open('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt', "w") as file:
+        file.write(fileContent)
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -157,23 +109,31 @@ class MyWidget(QtWidgets.QWidget):
         n_attribFromMap.setPosition(hou.Vector2(2, 0)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
 
-        # Create Python node 
-        n_python = n_terrain.createNode('python', 'python')
-        pythonScript = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/pythonScript.txt')
-        hou.parm('/obj/terrain/python/python').set(pythonScript)
-        n_python.setPosition(hou.Vector2(4, 0))
-        n_python.setInput(0, n_attribFromMap)
+        # Call getAttribMapColors with self
+        getAttribMapColors(self, n_attribFromMap)
 
+        global terrainColorsInHex
+        for i in range(len(terrainColorsInHex)):
+            attrib_wrangle_name = 'attribwrangle' + str(i)
+            new_attrib_wrangle = n_terrain.createNode('attribwrangle', attrib_wrangle_name)
+            sectionHexColor = terrainColorsInHex[i]
+            generateTerrainColorSectionExtractionVEXExpression(sectionHexColor)
+            vexExpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt')
+            hou.parm(f'/obj/terrain/{new_attrib_wrangle}/snippet').set(vexExpression)
+            new_attrib_wrangle.setPosition(hou.Vector2(4, 0)) 
+            new_attrib_wrangle.setInput(0, n_attribFromMap)
+
+        """
         # Create attribute promote node
         n_attrib_promote = n_terrain.createNode("attribpromote", "attribpromote")
         hou.parm('/obj/terrain/attribpromote/inname').set("Cd")
         hou.parm('/obj/terrain/attribpromote/outclass').set(1)
         hou.parm('/obj/terrain/attribpromote/deletein').set(0)
         n_attrib_promote.setPosition(hou.Vector2(6, 0)) 
-        n_attrib_promote.setInput(0, n_python)
+        n_attrib_promote.setInput(0, n_attribFromMap)
 
         # Create attribute wrangle node
-        n_attrib_wrangle = n_terrain.createNode('attribwrangle', 'attribwrangle')
+        n_attrib_wrangle = n_terrain.createNode('attribwrangle', 'attribwrangleforextrusion')
         hou.parm('/obj/terrain/attribwrangle/class').set(1)
         terrainAttribWrangleVEXpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainAttribWrangleVEXpression.txt')
         hou.parm('/obj/terrain/attribwrangle/snippet').set(terrainAttribWrangleVEXpression)
@@ -210,12 +170,11 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
         n_heightfield_noise.setInput(0, n_heightfield_blur)
         
-        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
+        hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
         
         n_terrain.layoutChildren()
+        """
         
-        # Call getAttribMapColors with self
-        getAttribMapColors(self, n_attribFromMap)
 
 def getAttribMapColors(self, node):
     node = node.geometry()
@@ -236,11 +195,11 @@ def getAttribMapColors(self, node):
         # Multiply by 255 and round to 0 decimal points
         scaled_color = tuple(round(c * 255) for c in color)  
         color_groups[scaled_color] += 1
-    global hexColorCodeGroups
+    global terrainColorsInHex
     
     for scaled_color, count in color_groups.items():
         if count >= 20:
-            hexColorCodeGroups.append(rgb_to_hex(scaled_color).strip())
+            terrainColorsInHex.append(rgb_to_hex(scaled_color).strip())
             #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
             
     addHexColorCodeGroupsToGUI(self)
@@ -282,11 +241,11 @@ class ColorDisplayFrame(QtWidgets.QFrame):
 
                 printHexColors()
                 print(f"\n index: {self.index}")
-                global hexColorCodeGroups
-                hexColorCodeGroups[self.index] = color.name() 
+                global terrainColorsInHex
+                terrainColorsInHex[self.index] = color.name() 
                 newColor = color.name()
 
-                updatePythonScript(oldColor, newColor)
+                #updatePythonScript(oldColor, newColor)
                 printHexColors()
 
         color_dialog.deleteLater()  # Clean up the dialog after use
