@@ -17,8 +17,11 @@ terrainColorsInHex = []
 global color_tuples
 color_tuples = []
 
-global terrain_parts_wrangle_nodes
-terrain_parts_wrangle_nodes = []
+global terrain_part_wrangle_nodes
+terrain_part_wrangle_nodes = []
+
+global terrain_part_color_nodes
+terrain_part_color_nodes = []
 
 def printParms(node):
     for p in node.parms():
@@ -117,7 +120,7 @@ class MyWidget(QtWidgets.QWidget):
 
         # Create attribute wrangle node for each color
         global terrainColorsInHex
-        global terrain_parts_wrangle_nodes
+        global terrain_part_wrangle_nodes
         for i in range(len(terrainColorsInHex)):
             attrib_wrangle_name = 'attribwrangle' + str(i)
             new_attrib_wrangle = n_terrain.createNode('attribwrangle', attrib_wrangle_name)
@@ -127,7 +130,7 @@ class MyWidget(QtWidgets.QWidget):
             hou.parm(f'/obj/terrain/{new_attrib_wrangle}/snippet').set(vexExpression)
             new_attrib_wrangle.setPosition(hou.Vector2(i*2, -4)) 
             new_attrib_wrangle.setInput(0, n_attribFromMap)
-            terrain_parts_wrangle_nodes.append(new_attrib_wrangle)
+            terrain_part_wrangle_nodes.append(new_attrib_wrangle)
 
         # Create color node for each color and attach it to its attribute wrangle node
         for i in range(len(terrainColorsInHex)):
@@ -141,6 +144,7 @@ class MyWidget(QtWidgets.QWidget):
             new_color_node.setPosition(hou.Vector2(i*2, -6)) 
             targetAttribNode = hou.node(f'/obj/terrain/attribwrangle{i}')
             new_color_node.setInput(0, targetAttribNode)
+            terrain_part_color_nodes.append(new_color_node)
 
         # Create object merge node to merge back all colors together, ready for extrusion
         n_merge_colors = n_terrain.createNode('merge', "merge_colors")
@@ -228,6 +232,16 @@ def getAttribMapColors(self, node):
             
     addHexColorCodeGroupsToGUI(self)
 
+# update the color node of the specific part to the new hex color
+def changeColorOnMap(index, newHexColor):
+    newRGBColors = hexToRGB(newHexColor)
+    rScaledDown = round(newRGBColors[0]/255,2)
+    gScaledDown = round(newRGBColors[1]/255,2)
+    bScaledDown = round(newRGBColors[2]/255,2)
+    targetColorNode = hou.node(f'/obj/terrain/color{index}/')
+    targetColorNode.parmTuple("color").set((rScaledDown, gScaledDown, bScaledDown))
+    targetColorNode
+
 class ColorDisplayFrame(QtWidgets.QFrame):
     def __init__(self, parent=None, index=0, frameColor="#FFFFFF"):
         super(ColorDisplayFrame, self).__init__(parent)
@@ -256,18 +270,16 @@ class ColorDisplayFrame(QtWidgets.QFrame):
 
     def handle_color_selection(self, result, color_dialog):
         if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
-            oldColor = self.frameColor
             color = color_dialog.currentColor()  # Get the selected color
             if color.isValid():
                 # Update the QFrame (color display box) background to the selected color
                 self.setStyleSheet(f"background-color: {color.name()};")
 
-
                 printHexColors()
                 print(f"\n index: {self.index}")
                 global terrainColorsInHex
                 terrainColorsInHex[self.index] = color.name() 
-                newColor = color.name()
+                changeColorOnMap(self.index, color.name())
 
                 printHexColors()
 
