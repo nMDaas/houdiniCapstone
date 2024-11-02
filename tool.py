@@ -106,7 +106,7 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/attribfrommap/filename').set(filepaths[0])
         hou.parm('/obj/terrain/attribfrommap/uv_invertv').set(1)
         hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
-        n_attribFromMap.setPosition(hou.Vector2(2, 0)) 
+        n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
 
         # Call getAttribMapColors with self
@@ -120,7 +120,7 @@ class MyWidget(QtWidgets.QWidget):
             generateTerrainColorSectionExtractionVEXExpression(sectionHexColor)
             vexExpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt')
             hou.parm(f'/obj/terrain/{new_attrib_wrangle}/snippet').set(vexExpression)
-            new_attrib_wrangle.setPosition(hou.Vector2(4, 0)) 
+            new_attrib_wrangle.setPosition(hou.Vector2(i*2, -4)) 
             new_attrib_wrangle.setInput(0, n_attribFromMap)
 
         """
