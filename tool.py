@@ -93,6 +93,7 @@ class MyWidget(QtWidgets.QWidget):
         # Connect buttons to functions
         self.ui.select_button.clicked.connect(selectMap)
         self.ui.apply_button.clicked.connect(self.apply)
+        self.ui.reload_button.clicked.connect(self.reload)
         self.ui.update_attrib_map_colors_button.clicked.connect(updateAttribMapColors)
 
     def apply(self):
@@ -117,6 +118,7 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
         n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
+        printParms(n_attribFromMap)
 
         # Call getAttribMapColors with self - display different colors found and populate terrainColorsInHex
         getAttribMapColors(self, n_attribFromMap)
@@ -205,7 +207,13 @@ class MyWidget(QtWidgets.QWidget):
         hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
         
         n_terrain.layoutChildren()
+
+    def my_button_callback(**kwargs):
+        # Your button's functionality here
+        print("Button clicked!")
         
+    def reload(self):
+        hou.parm('/obj/terrain/attribfrommap/reload').pressButton()
 
 def getAttribMapColors(self, node):
     node = node.geometry()
