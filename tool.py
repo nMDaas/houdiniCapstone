@@ -65,9 +65,6 @@ def addHexColorCodeGroupsToGUI(self):
         color_grid_layout.addWidget(label, i + 1, 0)
         color_grid_layout.addWidget(color_display_frame, i + 1, 1)
 
-def updateAttribMapColors():
-    print("update")
-
 def generateTerrainColorSectionExtractionVEXExpression(hexColor):
     sectionRGBColors = hexToRGB(hexColor)
     rScaledDown = sectionRGBColors[0]/255
@@ -94,7 +91,7 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.select_button.clicked.connect(selectMap)
         self.ui.apply_button.clicked.connect(self.apply)
         self.ui.reload_button.clicked.connect(self.reload)
-        self.ui.update_attrib_map_colors_button.clicked.connect(updateAttribMapColors)
+        self.ui.update_colors_button.clicked.connect(self.updateAttribColors)
 
     def apply(self):
         # Create terrain Geometry node
@@ -204,16 +201,23 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
         n_heightfield_noise.setInput(0, n_heightfield_blur)
         
-        hou.node('/obj/terrain/heightfield_noise').setDisplayFlag(True)
+        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
         
         n_terrain.layoutChildren()
-
-    def my_button_callback(**kwargs):
-        # Your button's functionality here
-        print("Button clicked!")
         
     def reload(self):
         hou.parm('/obj/terrain/attribfrommap/reload').pressButton()
+
+        #delete terrain object
+        n_terrain = hou.node('/obj/terrain/')
+        n_terrain.destroy()
+        global terrainColorsInHex
+        terrainColorsInHex.clear()
+
+        self.apply()
+
+    def updateAttribColors(self):
+        hou.node('/obj/terrain/merge_colors').setDisplayFlag(True)
 
 def getAttribMapColors(self, node):
     node = node.geometry()
@@ -291,6 +295,7 @@ class ColorDisplayFrame(QtWidgets.QFrame):
                 global terrainColorsInHex
                 terrainColorsInHex[self.index] = color.name() 
                 changeColorOnMap(self.index, color.name())
+                
 
                 printHexColors()
 
