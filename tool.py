@@ -91,7 +91,9 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.select_button.clicked.connect(selectMap)
         self.ui.apply_button.clicked.connect(self.apply)
         self.ui.reload_button.clicked.connect(self.reload)
-        self.ui.update_colors_button.clicked.connect(self.updateAttribColors)
+        self.ui.original_image_button.clicked.connect(self.showOriginalImage)
+        self.ui.modified_image_button.clicked.connect(self.showModifiedImage)
+        self.ui.extrusion_button.clicked.connect(self.showExtrusion)
 
     def apply(self):
         # Create terrain Geometry node
@@ -216,8 +218,14 @@ class MyWidget(QtWidgets.QWidget):
 
         self.apply()
 
-    def updateAttribColors(self):
+    def showOriginalImage(self):
+        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
+
+    def showModifiedImage(self):
         hou.node('/obj/terrain/merge_colors').setDisplayFlag(True)
+
+    def showExtrusion(self):
+        hou.node('/obj/terrain/polyextrude').setDisplayFlag(True)
 
 def getAttribMapColors(self, node):
     node = node.geometry()

@@ -90,7 +90,7 @@
                 <item>
                     <widget class="QLabel" name="simpleTextLabel">
                         <property name="text">
-                            <string>Edit Colors Found in Terrain: </string>
+                            <string>Edit Colors: </string>
                         </property>
                     </widget>
                 </item>
@@ -128,18 +128,48 @@
             </widget>
         </widget>
 
-
-         <widget class="QPushButton" name="update_colors_button">
+        <!-- Button to cook original image -->
+        <widget class="QPushButton" name="original_image_button">
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>550</y>
+                    <y>370</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
             </property>
             <property name="text">
-                <string>Update Colors</string>
+                <string>Original Image</string>
+            </property>
+        </widget>
+
+        <!-- Button to cook modified image (includes any color changes to terrain color sections) -->
+         <widget class="QPushButton" name="modified_image_button">
+            <property name="geometry">
+                <rect>
+                    <x>160</x>
+                    <y>370</y>
+                    <width>120</width>
+                    <height>32</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Modified Colors</string>
+            </property>
+        </widget>
+
+        <!-- Button to cook height extrusion) -->
+         <widget class="QPushButton" name="extrusion_button">
+            <property name="geometry">
+                <rect>
+                    <x>290</x>
+                    <y>370</y>
+                    <width>120</width>
+                    <height>32</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Extrusion</string>
             </property>
         </widget>
 
