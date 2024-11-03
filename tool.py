@@ -86,6 +86,29 @@ def generateTerrainColorSectionExtractionVEXExpression(hexColor):
     with open('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt', "w") as file:
         file.write(fileContent)
 
+def createHeightfieldFromMaps():
+
+        n_terrain = hou.node('obj/terrain/')
+        n_heightfield_project = hou.node('obj/terrain/heightfield_project')
+
+        # Create heightfield blur node
+        n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
+        hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
+        n_heightfield_blur.setInput(0, n_heightfield_project)
+        
+        # Create heightfield noise node
+        n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
+        hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
+        n_heightfield_noise.setInput(0, n_heightfield_blur)
+        
+        """
+        for i in range(1):
+            merge_node_name = 'merge_id' + str(i)
+            new_marge_node = n_id.createNode("merge", merge_node_name)
+            mask_node_name = 'mask_id' + str(i)
+            new_mask_node = n_id.createNode("maskbyobject", mask_node_name)
+            new_mask_node.setInput(0, merge_node_name) """
+
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super(MyWidget, self).__init__()
@@ -200,19 +223,9 @@ class MyWidget(QtWidgets.QWidget):
         n_heightfield_project.setInput(0, n_heightfield)
         n_heightfield_project.setInput(1, n_polyextrude_terrain)
         
-        # Create heightfield blur node
-        n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
-        hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
-        n_heightfield_blur.setInput(0, n_heightfield_project)
-        
-        # Create heightfield noise node
-        n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
-        hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
-        n_heightfield_noise.setInput(0, n_heightfield_blur)
-        
-        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
-        
         n_terrain.layoutChildren()
+
+        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
         
     def reload(self):
         hou.parm('/obj/terrain/attribfrommap/reload').pressButton()
@@ -303,6 +316,10 @@ class MyWidget(QtWidgets.QWidget):
             targetPolyExtrudeNode = hou.node(f'/obj/id/polyextrude{i}')
             new_null_node.setPosition(hou.Vector2(i,-10)) 
             new_null_node.setInput(0, targetPolyExtrudeNode)
+
+        # Now that that's done, create masks in the n_terrain node and create the heightfield based on ids
+        createHeightfieldFromMaps()
+
 
 def getIDAttribMapColors(self, node):
     node = node.geometry()
