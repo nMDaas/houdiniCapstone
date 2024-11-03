@@ -90,44 +90,51 @@ def createHeightfieldFromMaps():
 
         n_terrain = hou.node('obj/terrain/')
         n_heightfield_project = hou.node('obj/terrain/heightfield_project')
+
+        lastNode = n_heightfield_project
         
-        """
-        # Create heightfield noise node
-        n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
-        hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
-        n_heightfield_noise.setInput(0, n_heightfield_blur)
-        n_heightfield_noise.setPosition(hou.Vector2(14, 0)) 
-        """
-        
-        for i in range(1):
+        global idColorsHex
+        for i in range(len(idColorsHex)):
             # create a object merge node that gets OUT_id{i}
             merge_node_name = 'merge_id' + str(i)
             new_merge_node = n_terrain.createNode("object_merge", merge_node_name)
-            new_merge_node.setPosition(hou.Vector2(8, -14)) 
-            target_id_object = '/obj/id/OUT_id0'
+            new_merge_node.setPosition(hou.Vector2(8, -14-(i*5))) 
+            target_id_object = f'/obj/id/OUT_id{i}'
             hou.parm(f'/obj/terrain/{merge_node_name}/objpath1').set(target_id_object)
 
             # create a heightfield mask by object node that takes in n_heightfield_project and the object merge node as input
             mask_node_name = 'mask_id' + str(i)
             new_mask_node = n_terrain.createNode("heightfield_maskbyobject", mask_node_name)
-            new_mask_node.setInput(0, n_heightfield_project) 
+            new_mask_node.setInput(0, lastNode) 
             new_mask_node.setInput(1, new_merge_node) 
-            new_mask_node.setPosition(hou.Vector2(6, -14)) 
+            new_mask_node.setPosition(hou.Vector2(6, -14-(i*5))) 
             hou.parm(f'/obj/terrain/{mask_node_name}/blurradius').set(23)
 
             # Create heightfield blur node that takes in n_heightfield_project and the mask node as input
-            n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
-            hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
-            n_heightfield_blur.setInput(0, n_heightfield_project)
-            n_heightfield_blur.setInput(1, new_mask_node)
-            n_heightfield_blur.setPosition(hou.Vector2(4, -16)) 
+            blur_node_name = 'blur' + str(i) 
+            new_blur_node = n_terrain.createNode("heightfield_blur", blur_node_name)
+            hou.parm(f'/obj/terrain/{blur_node_name}/radius').set(22)
+            new_blur_node.setInput(0, lastNode)
+            new_blur_node.setInput(1, new_mask_node)
+            new_blur_node.setPosition(hou.Vector2(4, -16-(i*5) )) 
 
             # Create noise node that takes in the blur and the mask node as input
-            n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
-            hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
-            n_heightfield_noise.setInput(0, n_heightfield_blur)
-            n_heightfield_noise.setInput(1, new_mask_node)
-            n_heightfield_noise.setPosition(hou.Vector2(4, -18)) 
+            noise_node_name = 'noise' + str(i) 
+            new_noise_node = n_terrain.createNode("heightfield_noise", noise_node_name)
+            hou.parm(f'/obj/terrain/{noise_node_name}/elementsize').set(275)
+            new_noise_node.setInput(0, new_blur_node)
+            new_noise_node.setInput(1, new_mask_node)
+            new_noise_node.setPosition(hou.Vector2(4, -18-(i*5))) 
+
+            # Create a null node to mark the end of editing this ID
+            null_name = 'OUT_terrain_id' + str(i)
+            new_null_node = n_terrain.createNode("null", null_name)
+            new_null_node.setInput(0, new_noise_node)
+            new_null_node.setPosition(hou.Vector2(4, -20-(i*5))) 
+            lastNode = new_null_node
+
+        lastNode.setDisplayFlag(True)
+        hou.node('obj/id/').setDisplayFlag(False)
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
@@ -270,6 +277,7 @@ class MyWidget(QtWidgets.QWidget):
     def applyIdMap(self):
         OBJ = hou.node('/obj/')
         n_id = OBJ.createNode('geo', 'id')
+        n_id.setPosition(hou.Vector2(2, 0))  
 
         n_idGrid = n_id.createNode('grid', 'idGrid')
         hou.parm('/obj/id/idGrid/sizex').set(500)
