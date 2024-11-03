@@ -14,11 +14,17 @@ global n_attribFromMap
 global terrainColorsInHex 
 terrainColorsInHex = []
 
+global idColorsHex
+idColorsHex = []
+
 global color_tuples
 color_tuples = []
 
 global terrain_part_wrangle_nodes
 terrain_part_wrangle_nodes = []
+
+global id_part_wrangle_nodes
+id_part_wrangle_nodes = []
 
 global terrain_part_color_nodes
 terrain_part_color_nodes = []
@@ -55,7 +61,7 @@ def hexToRGB(hex_color):
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
     for i in range(len(terrainColorsInHex)):  # Adjust the range for the number of rows
-        label = QtWidgets.QLabel(f"Color {i + 1}")
+        label = QtWidgets.QLabel(f"{terrainColorsInHex[i]}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
 
         color_grid_widget = self.ui.colorGridScrollArea.widget()  # Access colorGridWidget
@@ -94,6 +100,8 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.original_image_button.clicked.connect(self.showOriginalImage)
         self.ui.modified_image_button.clicked.connect(self.showModifiedImage)
         self.ui.extrusion_button.clicked.connect(self.showExtrusion)
+        self.ui.select_id_button.clicked.connect(selectMap)
+        self.ui.apply_id_button.clicked.connect(self.applyIdMap)
 
     def apply(self):
         # Create terrain Geometry node
@@ -117,7 +125,6 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
         n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
-        printParms(n_attribFromMap)
 
         # Call getAttribMapColors with self - display different colors found and populate terrainColorsInHex
         getAttribMapColors(self, n_attribFromMap)
@@ -132,7 +139,7 @@ class MyWidget(QtWidgets.QWidget):
             generateTerrainColorSectionExtractionVEXExpression(sectionHexColor)
             vexExpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt')
             hou.parm(f'/obj/terrain/{new_attrib_wrangle}/snippet').set(vexExpression)
-            new_attrib_wrangle.setPosition(hou.Vector2(i*2, -4)) 
+            #new_attrib_wrangle.setPosition(hou.Vector2(0,-4)) 
             new_attrib_wrangle.setInput(0, n_attribFromMap)
             terrain_part_wrangle_nodes.append(new_attrib_wrangle)
 
@@ -227,6 +234,103 @@ class MyWidget(QtWidgets.QWidget):
     def showExtrusion(self):
         hou.node('/obj/terrain/polyextrude').setDisplayFlag(True)
 
+    def applyIdMap(self):
+        OBJ = hou.node('/obj/')
+        n_id = OBJ.createNode('geo', 'id')
+
+        n_idGrid = n_id.createNode('grid', 'idGrid')
+        hou.parm('/obj/id/idGrid/sizex').set(500)
+        hou.parm('/obj/id/idGrid/sizey').set(500)
+        hou.parm('/obj/id/idGrid/rows').set(150)
+        hou.parm('/obj/id/idGrid/cols').set(150)
+        n_idGrid.setPosition(hou.Vector2(0, 0))  
+        
+        # Create attribute from parameter node
+        n_idAttribFromMap = n_id.createNode('attribfrommap', 'id_attribfrommap')
+        global filepaths
+        hou.parm('/obj/id/id_attribfrommap/filename').set(filepaths[1])
+        hou.parm('/obj/id/id_attribfrommap/uv_invertv').set(1)
+        hou.parm('/obj/id/id_attribfrommap/srccolorspace').set("linear")
+        n_idAttribFromMap.setPosition(hou.Vector2(0, -2))  
+        n_idAttribFromMap.setInput(0, n_idGrid)
+
+        getIDAttribMapColors(self, n_idAttribFromMap)
+
+        # Create attribute wrangle node for each color
+        global idColorsHex
+        global id_part_wrangle_nodes
+        for i in range(len(idColorsHex)):
+            attrib_wrangle_name = 'attribwrangle' + str(i)
+            new_attrib_wrangle = n_id.createNode('attribwrangle', attrib_wrangle_name)
+            sectionHexColor = idColorsHex[i]
+            generateTerrainColorSectionExtractionVEXExpression(sectionHexColor)
+            vexExpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt')
+            hou.parm(f'/obj/id/{new_attrib_wrangle}/snippet').set(vexExpression)
+            new_attrib_wrangle.setPosition(hou.Vector2(i,-4)) 
+            new_attrib_wrangle.setInput(0, n_idAttribFromMap)
+            id_part_wrangle_nodes.append(new_attrib_wrangle)
+
+        # Create color node for each color and attach it to its attribute wrangle node
+        for i in range(len(idColorsHex)):
+            color_name = 'color' + str(i)
+            new_color_node = n_id.createNode("color", color_name)
+            sectionRGBColors = hexToRGB(idColorsHex[i])
+            rScaledDown = round(sectionRGBColors[0]/255,2)
+            gScaledDown = round(sectionRGBColors[1]/255,2)
+            bScaledDown = round(sectionRGBColors[2]/255,2)
+            new_color_node.parmTuple("color").set((rScaledDown, gScaledDown, bScaledDown))
+            new_color_node.setPosition(hou.Vector2(i*2, -6)) 
+            targetAttribNode = hou.node(f'/obj/id/attribwrangle{i}')
+            new_color_node.setInput(0, targetAttribNode)
+            terrain_part_color_nodes.append(new_color_node)
+
+        # Create a polyextrude node for each color and attach it to its color node
+        for i in range(len(idColorsHex)):
+            polyextrude_name = 'polyextrude' + str(i)
+            new_polyextrude_node = n_id.createNode("polyextrude", polyextrude_name)
+            hou.parm(f'/obj/id/{polyextrude_name}/splittype').set(0)
+            hou.parm(f'/obj/id/{polyextrude_name}/dist').set(100.0)
+            hou.parm(f'/obj/id/{polyextrude_name}/outputback').set(1)
+            new_polyextrude_node.setPosition(hou.Vector2(i, -8)) 
+            targetColorNode = hou.node(f'/obj/id/color{i}')
+            new_polyextrude_node.setInput(0, targetColorNode)
+
+        # Create a null node for each polyextrude and attach it to its polyextrude node
+        for i in range(len(idColorsHex)):
+            null_name = 'OUT_id' + str(i)
+            new_null_node = n_id.createNode("null", null_name)
+            new_null_node.setPosition(hou.Vector2(i, -10)) 
+            targetPolyExtrudeNode = hou.node(f'/obj/id/polyextrude{i}')
+            new_null_node.setPosition(hou.Vector2(i,-10)) 
+            new_null_node.setInput(0, targetPolyExtrudeNode)
+
+def getIDAttribMapColors(self, node):
+    node = node.geometry()
+    color_attribute = node.pointFloatAttribValues("Cd")
+    numCdComponents = 3  # RGB
+
+    # Create a list of color_attribute grouped into RGB colors for each grid cell
+    color_tuples = [
+        tuple(color_attribute[i:i + numCdComponents])
+        for i in range(0, len(color_attribute), numCdComponents)
+    ]
+
+    # Dictionary to count occurrences of each scaled color
+    color_groups = defaultdict(int)
+    
+    # Count occurrences of each color after multiplying by 255 and rounding to 0 decimal points
+    for color in color_tuples:
+        # Multiply by 255 and round to 0 decimal points
+        scaled_color = tuple(round(c * 255) for c in color)  
+        color_groups[scaled_color] += 1
+
+    global idColorsHex
+    
+    for scaled_color, count in color_groups.items():
+        if count >= 20:
+            idColorsHex.append(rgb_to_hex(scaled_color).strip())
+            #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
+
 def getAttribMapColors(self, node):
     node = node.geometry()
     color_attribute = node.pointFloatAttribValues("Cd")
@@ -303,7 +407,7 @@ class ColorDisplayFrame(QtWidgets.QFrame):
                 global terrainColorsInHex
                 terrainColorsInHex[self.index] = color.name() 
                 changeColorOnMap(self.index, color.name())
-                
+                #addHexColorCodeGroupsToGUI()
 
                 printHexColors()
 

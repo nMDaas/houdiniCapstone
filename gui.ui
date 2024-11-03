@@ -173,6 +173,56 @@
             </property>
         </widget>
 
+        <!-- widget to select id map-->
+        <widget class="QWidget" name="gridLayoutWidget">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>400</y>
+                    <width>361</width>
+                    <height>100</height>
+                </rect>
+            </property>
+
+            <layout class="QGridLayout" name="gridLayout">
+
+                <!-- row 0 -->
+                <item row="0" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_2">
+                        <item>
+                            <widget class="QLabel" name="label">
+                                <property name="text">
+                                    <string>Select ID map: </string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </item>
+                <item row="0" column="1">
+                    <widget class="QPushButton" name="select_id_button">
+                        <property name="text">
+                            <string>Select</string>
+                        </property>
+                    </widget>
+                </item>
+
+            </layout>
+        </widget>
+
+        <widget class="QPushButton" name="apply_id_button">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>470</y>
+                    <width>100</width>
+                    <height>32</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Apply</string>
+            </property>
+        </widget>
+
     </widget>
     <resources/>
     <connections/>
