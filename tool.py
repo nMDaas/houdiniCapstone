@@ -50,7 +50,7 @@ def rgb_to_hex(rgb_tuple):
 
 def hexToRGB(hex_color):
     """Convert a hex color string to an RGB tuple."""
-    print("hex_color: ", hex_color)
+    #print("hex_color: ", hex_color)
     hex_color = hex_color.lstrip('#')  # Remove '#' if present
     # Check that the length of the hex color is valid
     if len(hex_color) == 6:
@@ -90,24 +90,44 @@ def createHeightfieldFromMaps():
 
         n_terrain = hou.node('obj/terrain/')
         n_heightfield_project = hou.node('obj/terrain/heightfield_project')
-
-        # Create heightfield blur node
-        n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
-        hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
-        n_heightfield_blur.setInput(0, n_heightfield_project)
         
+        """
         # Create heightfield noise node
         n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
         hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
         n_heightfield_noise.setInput(0, n_heightfield_blur)
-        
+        n_heightfield_noise.setPosition(hou.Vector2(14, 0)) 
         """
+        
         for i in range(1):
+            # create a object merge node that gets OUT_id{i}
             merge_node_name = 'merge_id' + str(i)
-            new_marge_node = n_id.createNode("merge", merge_node_name)
+            new_merge_node = n_terrain.createNode("object_merge", merge_node_name)
+            new_merge_node.setPosition(hou.Vector2(8, -14)) 
+            target_id_object = '/obj/id/OUT_id0'
+            hou.parm(f'/obj/terrain/{merge_node_name}/objpath1').set(target_id_object)
+
+            # create a heightfield mask by object node that takes in n_heightfield_project and the object merge node as input
             mask_node_name = 'mask_id' + str(i)
-            new_mask_node = n_id.createNode("maskbyobject", mask_node_name)
-            new_mask_node.setInput(0, merge_node_name) """
+            new_mask_node = n_terrain.createNode("heightfield_maskbyobject", mask_node_name)
+            new_mask_node.setInput(0, n_heightfield_project) 
+            new_mask_node.setInput(1, new_merge_node) 
+            new_mask_node.setPosition(hou.Vector2(6, -14)) 
+            hou.parm(f'/obj/terrain/{mask_node_name}/blurradius').set(23)
+
+            # Create heightfield blur node that takes in n_heightfield_project and the mask node as input
+            n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
+            hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
+            n_heightfield_blur.setInput(0, n_heightfield_project)
+            n_heightfield_blur.setInput(1, new_mask_node)
+            n_heightfield_blur.setPosition(hou.Vector2(4, -16)) 
+
+            # Create noise node that takes in the blur and the mask node as input
+            n_heightfield_noise = n_terrain.createNode("heightfield_noise", "heightfield_noise")
+            hou.parm('/obj/terrain/heightfield_noise/elementsize').set(275)
+            n_heightfield_noise.setInput(0, n_heightfield_blur)
+            n_heightfield_noise.setInput(1, new_mask_node)
+            n_heightfield_noise.setPosition(hou.Vector2(4, -18)) 
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
