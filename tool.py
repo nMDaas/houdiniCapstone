@@ -58,9 +58,12 @@ def addHexColorCodeGroupsToGUI(self):
         label = QtWidgets.QLabel(f"Color {i + 1}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
 
+        color_grid_widget = self.ui.colorGridScrollArea.widget()  # Access colorGridWidget
+        color_grid_layout = color_grid_widget.layout() 
+
         # Add to grid layout (label on the left, color display frame on the right)
-        self.ui.colorGridLayout.addWidget(label, i + 1, 0)
-        self.ui.colorGridLayout.addWidget(color_display_frame, i + 1, 1)
+        color_grid_layout.addWidget(label, i + 1, 0)
+        color_grid_layout.addWidget(color_display_frame, i + 1, 1)
 
 def updateAttribMapColors():
     print("update")

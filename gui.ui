@@ -63,46 +63,57 @@
             </property>
         </widget>
 
-        <widget class="QWidget" name="colorGridWidget">
+        <widget class="QWidget" name="editColorsFoundInstruction">
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>110</y>
-                    <width>1000</width>
-                    <height>200</height>
+                    <y>90</y>
+                    <width>500</width>
+                    <height>100</height>
                 </rect>
             </property>
-            <widget class="QFrame">
-                <property name="frameShape">
-                    <enum>QFrame::HLine</enum>
-                </property>
-                <property name="frameShadow">
-                    <enum>QFrame::Raised</enum>
-                </property>
-            </widget>
-        </widget>
-
-        <!-- New Color Grid Layout -->
-        <widget class="QWidget" name="colorGridWidget">
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>120</y>
-                    <width>361</width>
-                    <height>200</height>
-                </rect>
-            </property>
-            <layout class="QGridLayout" name="colorGridLayout">
-                <!-- row 0 -->
-                <item row="0" column="0">
-                    <widget class="QLabel" name="label">
+            <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                    <widget class="QLabel" name="simpleTextLabel">
                         <property name="text">
-                            <string>Edit Colors Found: </string>
+                            <string>Edit Colors Found in Terrain: </string>
                         </property>
                     </widget>
                 </item>
             </layout>
         </widget>
+
+
+        <!-- New Color Grid Layout -->
+        <widget class="QScrollArea" name="colorGridScrollArea">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>160</y>
+                    <width>361</width>
+                    <height>200</height>
+                </rect>
+            </property>
+            <property name="widgetResizable">
+                <bool>true</bool>
+            </property>
+            
+            <widget class="QWidget" name="colorGridWidget">
+                <property name="geometry">
+                    <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>361</width>
+                        <height>200</height>
+                    </rect>
+                </property>
+                
+                <layout class="QGridLayout" name="colorGridLayout">
+                    <!-- Colors found in terrain are added in the grid layout here -->
+                </layout>
+            </widget>
+        </widget>
+
 
          <widget class="QPushButton" name="update_attrib_map_colors_button">
             <property name="geometry">
