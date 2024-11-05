@@ -91,7 +91,11 @@ def createHeightfieldFromMaps():
         n_terrain = hou.node('obj/terrain/')
         n_heightfield_project = hou.node('obj/terrain/heightfield_project')
 
-        lastNode = n_heightfield_project
+        n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
+        hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
+        n_heightfield_blur.setInput(0, n_heightfield_project)
+
+        lastNode = n_heightfield_blur
         
         global idColorsHex
         for i in range(len(idColorsHex)):
@@ -110,19 +114,11 @@ def createHeightfieldFromMaps():
             new_mask_node.setPosition(hou.Vector2(6, -14-(i*5))) 
             hou.parm(f'/obj/terrain/{mask_node_name}/blurradius').set(23)
 
-            # Create heightfield blur node that takes in n_heightfield_project and the mask node as input
-            blur_node_name = 'blur' + str(i) 
-            new_blur_node = n_terrain.createNode("heightfield_blur", blur_node_name)
-            hou.parm(f'/obj/terrain/{blur_node_name}/radius').set(22)
-            new_blur_node.setInput(0, lastNode)
-            new_blur_node.setInput(1, new_mask_node)
-            new_blur_node.setPosition(hou.Vector2(4, -16-(i*5) )) 
-
             # Create noise node that takes in the blur and the mask node as input
             noise_node_name = 'noise' + str(i) 
             new_noise_node = n_terrain.createNode("heightfield_noise", noise_node_name)
             hou.parm(f'/obj/terrain/{noise_node_name}/elementsize').set(275)
-            new_noise_node.setInput(0, new_blur_node)
+            new_noise_node.setInput(0, lastNode)
             new_noise_node.setInput(1, new_mask_node)
             new_noise_node.setPosition(hou.Vector2(4, -18-(i*5))) 
 
