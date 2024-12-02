@@ -1,0 +1,9 @@
+float targetR = 0.807843137254902;
+float targetG = 0.396078431372549;
+float targetB = 0.7764705882352941;
+float differenceR = @Cd.r - targetR;
+float differenceG = @Cd.g - targetG;
+float differenceB = @Cd.b - targetB;
+if (!(differenceR < 0.1 && differenceR > -0.1 && differenceG < 0.1 && differenceG > -0.1 && differenceB < 0.1 && differenceB > -0.1)) {
+	removepoint(0,@ptnum);
+}
