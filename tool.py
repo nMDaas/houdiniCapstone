@@ -2,6 +2,7 @@ import hou
 from PySide2 import QtCore, QtUiTools, QtWidgets
 from PySide2.QtWidgets import QFileDialog
 from collections import defaultdict
+from PIL import Image
 
 global initial_directory
 initial_directory = "/Users/natashadaas/houdiniCapstone/inputImages/"
@@ -131,6 +132,12 @@ def createHeightfieldFromMaps():
 
         lastNode.setDisplayFlag(True)
         hou.node('obj/id/').setDisplayFlag(False)
+
+def testPrintImageHeightWidth():
+    with Image.open('/Users/natashadaas/houdiniCapstone/media.jpg') as img:
+        width, height = img.size
+
+    print(f"Width: {width}, Height: {height}")
 
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
