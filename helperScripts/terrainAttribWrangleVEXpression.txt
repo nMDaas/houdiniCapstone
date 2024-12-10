@@ -1,24 +1,22 @@
-// "mountain" if green range is highest
-int mountain = (@Cd.g > @Cd.r) && (@Cd.g > @Cd.b);
+// Normalize RGB values
+float rNorm = @Cd.r / 255.0;
+float gNorm = @Cd.g / 255.0;
+float bNorm = @Cd.b / 255.0;
 
-// normalizing rgb values
-float rNorm = @Cd.r / 255;
-float gNorm = @Cd.g / 255;
-float bNorm = @Cd.b / 255;
-// find min and max of normalized values
+// Calculate brightness (average of normalized R, G, B)
+float brightness = (rNorm + gNorm + bNorm) / 3.0;
+
+// Calculate saturation
 float maxNorm = max(rNorm, gNorm, bNorm);
 float minNorm = min(rNorm, gNorm, bNorm);
-// assign value
-float value = maxNorm;
-// calculate saturation
-float saturation = (value - minNorm) / value;
-float saturationPower = pow(saturation, 3.0);
+float saturation = (maxNorm - minNorm) / max(0.0001, maxNorm); // Avoid division by zero
 
-int highMax = 150; 
+// Calculate whiteness level (whiter is higher brightness and lower saturation)
+float whitenessLevel = brightness * (1.0 - saturation);
 
-if (mountain) { 
-    @zextrusion = saturationPower * highMax;
-} 
-else { 
-    @zextrusion = 0.1;
-}
+// Define min and max extrusion
+float maxExtrusion = 17000.0; // Maximum height for pure white
+float minExtrusion = 0.1;   // Minimum height for pure black
+
+// Calculate extrusion based on whiteness level
+@zextrusion = minExtrusion + (maxExtrusion - minExtrusion) * whitenessLevel;

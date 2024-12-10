@@ -242,7 +242,12 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain/polyextrude/localzscaleattrib').set("zextrusion")
         n_polyextrude_terrain.setPosition(hou.Vector2(10, 0)) 
         n_polyextrude_terrain.setInput(0, n_attrib_wrangle)
+
+        n_terrain.layoutChildren()
+        hou.node('/obj/terrain/polyextrude').setDisplayFlag(True)
         
+        """
+
         # Create heightfield node
         n_heightfield = n_terrain.createNode("heightfield", "heightfield")
         hou.parm('/obj/terrain/heightfield/sizex').set(500)
@@ -252,10 +257,9 @@ class MyWidget(QtWidgets.QWidget):
         n_heightfield_project = n_terrain.createNode("heightfield_project", "heightfield_project")
         n_heightfield_project.setInput(0, n_heightfield)
         n_heightfield_project.setInput(1, n_polyextrude_terrain)
-        
-        n_terrain.layoutChildren()
 
         hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
+        """
         
     def reload(self):
         hou.parm('/obj/terrain/attribfrommap/reload').pressButton()
@@ -350,7 +354,6 @@ class MyWidget(QtWidgets.QWidget):
 
         # Now that that's done, create masks in the n_terrain node and create the heightfield based on ids
         createHeightfieldFromMaps()
-
 
 def getIDAttribMapColors(self, node):
     node = node.geometry()

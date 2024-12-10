@@ -14,7 +14,7 @@
             <string>Color Palette</string>
         </property>
         
-       <widget class="QWidget" name="gridLayoutWidget">
+        <widget class="QWidget" name="gridLayoutWidget">
             <property name="geometry">
                 <rect>
                     <x>30</x>
@@ -25,8 +25,6 @@
             </property>
 
             <layout class="QGridLayout" name="gridLayout">
-
-                <!-- row 0 -->
                 <item row="0" column="0">
                     <layout class="QVBoxLayout" name="verticalLayout_2">
                         <item>
@@ -45,7 +43,6 @@
                         </property>
                     </widget>
                 </item>
-
             </layout>
         </widget>
 
@@ -63,7 +60,7 @@
             </property>
         </widget>
 
-         <widget class="QPushButton" name="reload_button">
+        <widget class="QPushButton" name="reload_button">
             <property name="geometry">
                 <rect>
                     <x>150</x>
@@ -97,8 +94,6 @@
             </layout>
         </widget>
 
-
-        <!-- New Color Grid Layout -->
         <widget class="QScrollArea" name="colorGridScrollArea">
             <property name="geometry">
                 <rect>
@@ -123,12 +118,10 @@
                 </property>
                 
                 <layout class="QGridLayout" name="colorGridLayout">
-                    <!-- Colors found in terrain are added in the grid layout here -->
                 </layout>
             </widget>
         </widget>
 
-        <!-- Button to cook original image -->
         <widget class="QPushButton" name="original_image_button">
             <property name="geometry">
                 <rect>
@@ -143,8 +136,7 @@
             </property>
         </widget>
 
-        <!-- Button to cook modified image (includes any color changes to terrain color sections) -->
-         <widget class="QPushButton" name="modified_image_button">
+        <widget class="QPushButton" name="modified_image_button">
             <property name="geometry">
                 <rect>
                     <x>160</x>
@@ -158,8 +150,7 @@
             </property>
         </widget>
 
-        <!-- Button to cook height extrusion) -->
-         <widget class="QPushButton" name="extrusion_button">
+        <widget class="QPushButton" name="extrusion_button">
             <property name="geometry">
                 <rect>
                     <x>290</x>
@@ -173,7 +164,6 @@
             </property>
         </widget>
 
-        <!-- widget to select id map-->
         <widget class="QWidget" name="gridLayoutWidget">
             <property name="geometry">
                 <rect>
@@ -185,8 +175,6 @@
             </property>
 
             <layout class="QGridLayout" name="gridLayout">
-
-                <!-- row 0 -->
                 <item row="0" column="0">
                     <layout class="QVBoxLayout" name="verticalLayout_2">
                         <item>
@@ -205,7 +193,6 @@
                         </property>
                     </widget>
                 </item>
-
             </layout>
         </widget>
 
@@ -223,6 +210,35 @@
             </property>
         </widget>
 
+        <!-- Added Dropdown Widget -->
+        <widget class="QComboBox" name="testDropdown">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>520</y>
+                    <width>200</width>
+                    <height>32</height>
+                </rect>
+            </property>
+            <property name="toolTip">
+                <string>Select an option</string>
+            </property>
+            <item>
+                <property name="text">
+                    <string>Flat Land</string>
+                </property>
+            </item>
+            <item>
+                <property name="text">
+                    <string>Noise</string>
+                </property>
+            </item>
+            <item>
+                <property name="text">
+                    <string>Mix</string>
+                </property>
+            </item>
+        </widget>
     </widget>
     <resources/>
     <connections/>
