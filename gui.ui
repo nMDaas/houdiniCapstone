@@ -7,7 +7,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>463</width>
-                <height>600</height>
+                <height>650</height>
             </rect>
         </property>
         <property name="windowTitle">
@@ -100,7 +100,7 @@
                     <x>30</x>
                     <y>160</y>
                     <width>361</width>
-                    <height>200</height>
+                    <height>150</height>
                 </rect>
             </property>
             <property name="widgetResizable">
@@ -126,7 +126,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>370</y>
+                    <y>320</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
@@ -140,7 +140,7 @@
             <property name="geometry">
                 <rect>
                     <x>160</x>
-                    <y>370</y>
+                    <y>320</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
@@ -154,7 +154,7 @@
             <property name="geometry">
                 <rect>
                     <x>290</x>
-                    <y>370</y>
+                    <y>320</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
@@ -168,7 +168,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>400</y>
+                    <y>330</y>
                     <width>361</width>
                     <height>100</height>
                 </rect>
@@ -200,7 +200,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>470</y>
+                    <y>400</y>
                     <width>100</width>
                     <height>32</height>
                 </rect>
@@ -208,6 +208,54 @@
             <property name="text">
                 <string>Apply</string>
             </property>
+        </widget>
+
+        <widget class="QWidget" name="applyTexturesInstruction">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>410</y>
+                    <width>500</width>
+                    <height>100</height>
+                </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                    <widget class="QLabel" name="simpleTextLabel">
+                        <property name="text">
+                            <string>Apply Textures: </string>
+                        </property>
+                    </widget>
+                </item>
+            </layout>
+        </widget>
+
+        <widget class="QScrollArea" name="idGridScrollArea">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>480</y>
+                    <width>361</width>
+                    <height>130</height>
+                </rect>
+            </property>
+            <property name="widgetResizable">
+                <bool>true</bool>
+            </property>
+            
+            <widget class="QWidget" name="idGridWidget">
+                <property name="geometry">
+                    <rect>
+                        <x>0</x>
+                        <y>360</y>
+                        <width>361</width>
+                        <height>200</height>
+                    </rect>
+                </property>
+                
+                <layout class="QGridLayout" name="idGridLayout">
+                </layout>
+            </widget>
         </widget>
 
         <!-- Added Dropdown Widget -->
