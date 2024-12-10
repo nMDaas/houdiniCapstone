@@ -59,6 +59,13 @@ def hexToRGB(hex_color):
     else:
         raise ValueError("Invalid hex color format: must be a 6-digit hex string.")
 
+def rgb_to_saturation(rgb_tuple):
+    r, g, b = rgb_tuple
+    brightness = (r + g + b) / 3
+
+    print("Brightness: " + str(brightness))
+    return brightness
+
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
     for i in range(len(terrainColorsInHex)):  # Adjust the range for the number of rows
@@ -68,9 +75,16 @@ def addHexColorCodeGroupsToGUI(self):
         color_grid_widget = self.ui.colorGridScrollArea.widget()  # Access colorGridWidget
         color_grid_layout = color_grid_widget.layout() 
 
+        # Create an input box for editing the hex color
+        input_box = QtWidgets.QLineEdit()
+        initialSaturation = str(rgb_to_saturation(hexToRGB(terrainColorsInHex[i])))
+        input_box.setText(initialSaturation)  # Pre-fill with the current hex code
+        input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
+
         # Add to grid layout (label on the left, color display frame on the right)
         color_grid_layout.addWidget(label, i + 1, 0)
         color_grid_layout.addWidget(color_display_frame, i + 1, 1)
+        color_grid_layout.addWidget(input_box, i + 1, 2)
 
 def generateTerrainColorSectionExtractionVEXExpression(hexColor):
     sectionRGBColors = hexToRGB(hexColor)
@@ -429,22 +443,6 @@ class ColorDisplayFrame(QtWidgets.QFrame):
         self.setStyleSheet(f"background-color: {frameColor};")  # Default color
         self.setMinimumSize(50, 25)
         self.frameColor = frameColor
-
-    # Override mousePressEvent to open a non-modal color picker
-    def mousePressEvent(self, event):
-        self.open_color_picker()
-
-    def open_color_picker(self):
-        # Open color picker dialog (non-modal)
-        color_dialog = QtWidgets.QColorDialog(self)  # Ensure it's parented correctly
-        color_dialog.setWindowTitle("Select Color")
-        color_dialog.setOption(QtWidgets.QColorDialog.DontUseNativeDialog, False)  # Optional, ensures a consistent appearance
-        color_dialog.setStyleSheet("") 
-        
-        color_dialog.show()
-
-        # Handle the accepted signal (non-blocking)
-        color_dialog.finished.connect(lambda result: self.handle_color_selection(result, color_dialog))
 
     def handle_color_selection(self, result, color_dialog):
         if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
