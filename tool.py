@@ -70,11 +70,26 @@ def hexToRGB(hex_color):
     else:
         raise ValueError("Invalid hex color format: must be a 6-digit hex string.")
 
-def rgb_to_saturation(rgb_tuple):
+def rgb_to_brightness(rgb_tuple):
     r, g, b = rgb_tuple
     brightness = (r + g + b) / 3
 
     return brightness
+
+def rgb_brightened_by_val(rgb_tuple, new_brightness):
+    # Convert the RGB values from 0-1 range to 0-255 range
+    r, g, b = rgb_tuple
+
+    # Calculate the current brightness in the 0-255 range
+    current_brightness = rgb_to_brightness((r, g, b))
+    scale_factor = new_brightness / current_brightness if current_brightness != 0 else 1
+
+    # Apply the scaling factor
+    r_new = r * scale_factor
+    g_new = g * scale_factor
+    b_new = b * scale_factor
+
+    return (r_new, g_new, b_new)
 
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
@@ -90,9 +105,9 @@ def addHexColorCodeGroupsToGUI(self):
         # Create an input box for editing the hex color
         input_box = QtWidgets.QLineEdit()
         global g_BrightnessValues
-        initialSaturation = str(rgb_to_saturation(hexToRGB(terrainColorsInHex[i])))
-        g_BrightnessValues.append(initialSaturation)
-        input_box.setText(initialSaturation)  # Pre-fill with the current hex code
+        initialBrightness = str(rgb_to_brightness(hexToRGB(terrainColorsInHex[i])))
+        g_BrightnessValues.append(initialBrightness)
+        input_box.setText(initialBrightness)  # Pre-fill with the current hex code
         input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
         # Connect the input box text change signal to the method that handles it
         input_box.textChanged.connect(lambda text, idx=i: self.handleInputChange(text, idx))
@@ -187,11 +202,24 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.apply_id_button.clicked.connect(self.applyIdMap)
 
     def handleInputChange(self, new_text, idx):
+        # update the brightness in the global g_BrightnessValues map
         global g_BrightnessValues
         g_BrightnessValues[idx] = float(new_text)
-        print(f"Input changed for color index {idx}: {new_text}")
+        
+        # calculate the brightened color
+        global terrainColorsInHex
+        old_hex_color = terrainColorsInHex[idx]
+        old_rgb_color = hexToRGB(old_hex_color)
+        new_rgb_tuple = rgb_brightened_by_val(old_rgb_color, float(new_text))
+        new_hex_color = rgb_to_hex(new_rgb_tuple)
+
+        # update the color of the correct display frame
         global g_ColorDisplayFrames
-        g_ColorDisplayFrames[idx].change_color()
+        g_ColorDisplayFrames[idx].change_color(new_hex_color)
+
+        # update global variable terrainColorsInHex and change color on the map in Houdini
+        terrainColorsInHex[idx] = new_hex_color
+        changeColorOnMap(idx, new_hex_color)
 
     def apply(self):
         # Create terrain Geometry node
@@ -467,8 +495,8 @@ class ColorDisplayFrame(QtWidgets.QFrame):
         self.setMinimumSize(50, 25)
         self.frameColor = frameColor
 
-    def change_color(self):
-        self.setStyleSheet(f"background-color: #ffffff;")  # Make sure to use quotes around the color
+    def change_color(self, new_color):
+        self.setStyleSheet(f"background-color: {new_color};")  # Make sure to use quotes around the color
 
     def handle_color_selection(self, result, color_dialog):
         if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
