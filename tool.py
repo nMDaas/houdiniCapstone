@@ -18,6 +18,12 @@ terrainColorsInHex = []
 global idColorsHex
 idColorsHex = []
 
+global g_ColorDisplayFrames
+g_ColorDisplayFrames = []
+
+global g_BrightnessValues
+g_BrightnessValues = []
+
 global color_tuples
 color_tuples = []
 
@@ -44,6 +50,11 @@ def printHexColors():
     for i in range(len(terrainColorsInHex)):
         print(f"{i}: {terrainColorsInHex[i]}")
 
+def printGBrightnessValues():
+    global g_BrightnessValues
+    for i in range(len(g_BrightnessValues)):
+        print(f"{i}: {g_BrightnessValues[i]}")
+
 def rgb_to_hex(rgb_tuple):
     # get r, g and b values in 0-255 range from rgb_tuple
     r, g, b = [int(c) for c in rgb_tuple]
@@ -63,7 +74,6 @@ def rgb_to_saturation(rgb_tuple):
     r, g, b = rgb_tuple
     brightness = (r + g + b) / 3
 
-    print("Brightness: " + str(brightness))
     return brightness
 
 def addHexColorCodeGroupsToGUI(self):
@@ -71,15 +81,21 @@ def addHexColorCodeGroupsToGUI(self):
     for i in range(len(terrainColorsInHex)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"{terrainColorsInHex[i]}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
+        global g_ColorDisplayFrames
+        g_ColorDisplayFrames.append(color_display_frame)
 
         color_grid_widget = self.ui.colorGridScrollArea.widget()  # Access colorGridWidget
         color_grid_layout = color_grid_widget.layout() 
 
         # Create an input box for editing the hex color
         input_box = QtWidgets.QLineEdit()
+        global g_BrightnessValues
         initialSaturation = str(rgb_to_saturation(hexToRGB(terrainColorsInHex[i])))
+        g_BrightnessValues.append(initialSaturation)
         input_box.setText(initialSaturation)  # Pre-fill with the current hex code
         input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
+        # Connect the input box text change signal to the method that handles it
+        input_box.textChanged.connect(lambda text, idx=i: self.handleInputChange(text, idx))
 
         # Add to grid layout (label on the left, color display frame on the right)
         color_grid_layout.addWidget(label, i + 1, 0)
@@ -169,6 +185,13 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.extrusion_button.clicked.connect(self.showExtrusion)
         self.ui.select_id_button.clicked.connect(selectMap)
         self.ui.apply_id_button.clicked.connect(self.applyIdMap)
+
+    def handleInputChange(self, new_text, idx):
+        global g_BrightnessValues
+        g_BrightnessValues[idx] = float(new_text)
+        print(f"Input changed for color index {idx}: {new_text}")
+        global g_ColorDisplayFrames
+        g_ColorDisplayFrames[idx].change_color()
 
     def apply(self):
         # Create terrain Geometry node
@@ -443,6 +466,9 @@ class ColorDisplayFrame(QtWidgets.QFrame):
         self.setStyleSheet(f"background-color: {frameColor};")  # Default color
         self.setMinimumSize(50, 25)
         self.frameColor = frameColor
+
+    def change_color(self):
+        self.setStyleSheet(f"background-color: #ffffff;")  # Make sure to use quotes around the color
 
     def handle_color_selection(self, result, color_dialog):
         if result == QtWidgets.QDialog.Accepted:  # 1 means OK was clicked
