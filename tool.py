@@ -132,13 +132,31 @@ def generateTerrainColorSectionExtractionVEXExpression(hexColor):
     with open('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt', "w") as file:
         file.write(fileContent)
 
-def createHeightfieldFromMaps():
+# Create Terrain Texture Node
+def createTerrainTexture():
+        
+        # Create terrain Geometry node
+        OBJ = hou.node('/obj/')
+        n_terrain_texture = OBJ.createNode('geo', 'terrain_texture')
 
-        n_terrain = hou.node('obj/terrain/')
-        n_heightfield_project = hou.node('obj/terrain/heightfield_project')
+        # Create heightfield node
+        n_heightfield = n_terrain_texture.createNode("heightfield", "heightfield")
+        print(n_heightfield.path())
 
-        n_heightfield_blur = n_terrain.createNode("heightfield_blur", "heightfield_blur")
-        hou.parm('/obj/terrain/heightfield_blur/radius').set(22)
+        hou.parm('/obj/terrain_texture/heightfield/sizex').set(500)
+        hou.parm('/obj/terrain_texture/heightfield/sizey').set(500)
+
+        # Create an object merge node that pulls from terrain_height's OUT node
+        n_terrain_height_merge = n_terrain_texture.createNode("object_merge", "terrain_height_merge")
+        hou.parm(f'/obj/terrain_texture/terrain_height_merge//objpath1').set('../../terrain_height/OUT_TERRAIN_HEIGHT')
+
+        # Create heightfield project node
+        n_heightfield_project = n_terrain_texture.createNode("heightfield_project", "heightfield_project")
+        n_heightfield_project.setInput(0, n_heightfield)
+        n_heightfield_project.setInput(1, n_terrain_height_merge)
+        
+        n_heightfield_blur = n_terrain_texture.createNode("heightfield_blur", "heightfield_blur")
+        hou.parm('/obj/terrain_texture/heightfield_blur/radius').set(22)
         n_heightfield_blur.setInput(0, n_heightfield_project)
 
         lastNode = n_heightfield_blur
@@ -147,36 +165,42 @@ def createHeightfieldFromMaps():
         for i in range(len(idColorsHex)):
             # create a object merge node that gets OUT_id{i}
             merge_node_name = 'merge_id' + str(i)
-            new_merge_node = n_terrain.createNode("object_merge", merge_node_name)
+            new_merge_node = n_terrain_texture.createNode("object_merge", merge_node_name)
             new_merge_node.setPosition(hou.Vector2(8, -14-(i*5))) 
             target_id_object = f'/obj/id/OUT_id{i}'
-            hou.parm(f'/obj/terrain/{merge_node_name}/objpath1').set(target_id_object)
+            hou.parm(f'/obj/terrain_texture/{merge_node_name}/objpath1').set(target_id_object)
 
             # create a heightfield mask by object node that takes in n_heightfield_project and the object merge node as input
             mask_node_name = 'mask_id' + str(i)
-            new_mask_node = n_terrain.createNode("heightfield_maskbyobject", mask_node_name)
+            new_mask_node = n_terrain_texture.createNode("heightfield_maskbyobject", mask_node_name)
             new_mask_node.setInput(0, lastNode) 
             new_mask_node.setInput(1, new_merge_node) 
             new_mask_node.setPosition(hou.Vector2(6, -14-(i*5))) 
-            hou.parm(f'/obj/terrain/{mask_node_name}/blurradius').set(23)
+            hou.parm(f'/obj/terrain_texture/{mask_node_name}/blurradius').set(23)
 
             # Create noise node that takes in the blur and the mask node as input
             noise_node_name = 'noise' + str(i) 
-            new_noise_node = n_terrain.createNode("heightfield_noise", noise_node_name)
-            hou.parm(f'/obj/terrain/{noise_node_name}/elementsize').set(275)
+            new_noise_node = n_terrain_texture.createNode("heightfield_noise", noise_node_name)
+            hou.parm(f'/obj/terrain_texture/{noise_node_name}/elementsize').set(275)
             new_noise_node.setInput(0, lastNode)
             new_noise_node.setInput(1, new_mask_node)
             new_noise_node.setPosition(hou.Vector2(4, -18-(i*5))) 
 
             # Create a null node to mark the end of editing this ID
             null_name = 'OUT_terrain_id' + str(i)
-            new_null_node = n_terrain.createNode("null", null_name)
+            new_null_node = n_terrain_texture.createNode("null", null_name)
             new_null_node.setInput(0, new_noise_node)
             new_null_node.setPosition(hou.Vector2(4, -20-(i*5))) 
             lastNode = new_null_node
 
-        lastNode.setDisplayFlag(True)
+        n_null = n_terrain_texture.createNode("null", "OUT_TERRAIN_HEIGHT")
+        n_null.setInput(0, lastNode)
+        n_null.setPosition(hou.Vector2(12,0)) 
+
+        n_terrain_texture.layoutChildren()
+        n_null.setDisplayFlag(True) 
         hou.node('obj/id/').setDisplayFlag(False)
+        hou.node('obj/terrain_height/').setDisplayFlag(False)
 
 def testPrintImageHeightWidth():
     with Image.open('/Users/natashadaas/houdiniCapstone/media.jpg') as img:
@@ -222,7 +246,7 @@ class MyWidget(QtWidgets.QWidget):
         changeColorOnMap(idx, new_hex_color)
 
     def apply(self):
-        # Create terrain Geometry node
+        # Create terrain Height node
         OBJ = hou.node('/obj/')
         n_terrain = OBJ.createNode('geo', 'terrain_height')
         
@@ -307,6 +331,11 @@ class MyWidget(QtWidgets.QWidget):
         hou.parm('/obj/terrain_height/polyextrude/localzscaleattrib').set("zextrusion")
         n_polyextrude_terrain.setPosition(hou.Vector2(10, 0)) 
         n_polyextrude_terrain.setInput(0, n_attrib_wrangle)
+
+        # Create a null node for OUT_TERRAIN_HEIGHT
+        n_null = n_terrain.createNode("null", "OUT_TERRAIN_HEIGHT")
+        n_null.setInput(0, n_polyextrude_terrain)
+        n_null.setPosition(hou.Vector2(12,0)) 
 
         n_terrain.layoutChildren()
         hou.node('/obj/terrain_height/polyextrude').setDisplayFlag(True)
@@ -417,8 +446,8 @@ class MyWidget(QtWidgets.QWidget):
             new_null_node.setPosition(hou.Vector2(i,-10)) 
             new_null_node.setInput(0, targetPolyExtrudeNode)
 
-        # Now that that's done, create masks in the n_terrain node and create the heightfield based on ids
-        createHeightfieldFromMaps()
+        # Now that that's done, create masks in the terrain_texture node and create the heightfield based on ids
+        createTerrainTexture()
 
 def getIDAttribMapColors(self, node):
     node = node.geometry()
