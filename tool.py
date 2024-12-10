@@ -92,29 +92,23 @@ def rgb_brightened_by_val(rgb_tuple, new_brightness):
     return (r_new, g_new, b_new)
 
 def addIDGroupsToGUI(self):
-    for i in range(2):  # Adjust the range for the number of rows
-        label = "test"
-        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
+    global idColorsHex
+    for i in range(len(idColorsHex)):  # Adjust the range for the number of rows
+        label = QtWidgets.QLabel(f"{idColorsHex[i]}")
+        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=idColorsHex[i])  # Custom QFrame
         #global g_ColorDisplayFrames
         #g_ColorDisplayFrames.append(color_display_frame)
 
         id_grid_widget = self.ui.idGridScrollArea.widget()  # Access colorGridWidget
-        id_grid_layout = idGridWidget.layout() 
+        id_grid_layout = id_grid_widget.layout() 
 
-        # Create an input box for editing the hex color
-        input_box = QtWidgets.QLineEdit()
-        global g_BrightnessValues
-        initialBrightness = str(rgb_to_brightness(hexToRGB(terrainColorsInHex[i])))
-        g_BrightnessValues.append(initialBrightness)
-        input_box.setText(initialBrightness)  # Pre-fill with the current hex code
-        input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
-        # Connect the input box text change signal to the method that handles it
-        input_box.textChanged.connect(lambda text, idx=i: self.handleInputChange(text, idx))
+        # Create a dropdown
+        dropdown_box = QtWidgets.QComboBox()
 
         # Add to grid layout (label on the left, color display frame on the right)
         id_grid_layout.addWidget(label, i + 1, 0)
         id_grid_layout.addWidget(color_display_frame, i + 1, 1)
-        id_grid_layout.addWidget(input_box, i + 1, 2)
+        id_grid_layout.addWidget(dropdown_box, i + 1, 2)
 
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
