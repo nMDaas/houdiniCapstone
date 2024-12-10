@@ -224,23 +224,23 @@ class MyWidget(QtWidgets.QWidget):
     def apply(self):
         # Create terrain Geometry node
         OBJ = hou.node('/obj/')
-        n_terrain = OBJ.createNode('geo', 'terrain')
+        n_terrain = OBJ.createNode('geo', 'terrain_height')
         
         # Create grid node in terrain node
         n_terrainGrid = n_terrain.createNode('grid', 'terrainGrid')
-        hou.parm('/obj/terrain/terrainGrid/sizex').set(500)
-        hou.parm('/obj/terrain/terrainGrid/sizey').set(500)
-        hou.parm('/obj/terrain/terrainGrid/rows').set(150)
-        hou.parm('/obj/terrain/terrainGrid/cols').set(150)
+        hou.parm('/obj/terrain_height/terrainGrid/sizex').set(500)
+        hou.parm('/obj/terrain_height/terrainGrid/sizey').set(500)
+        hou.parm('/obj/terrain_height/terrainGrid/rows').set(150)
+        hou.parm('/obj/terrain_height/terrainGrid/cols').set(150)
         n_terrainGrid.setPosition(hou.Vector2(0, 0))  
         
         # Create attribute from parameter node
         global n_attribFromMap
         n_attribFromMap = n_terrain.createNode('attribfrommap', 'attribfrommap')
         global filepaths
-        hou.parm('/obj/terrain/attribfrommap/filename').set(filepaths[0])
-        hou.parm('/obj/terrain/attribfrommap/uv_invertv').set(1)
-        hou.parm('/obj/terrain/attribfrommap/srccolorspace').set("linear")
+        hou.parm('/obj/terrain_height/attribfrommap/filename').set(filepaths[0])
+        hou.parm('/obj/terrain_height/attribfrommap/uv_invertv').set(1)
+        hou.parm('/obj/terrain_height/attribfrommap/srccolorspace').set("linear")
         n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
         n_attribFromMap.setInput(0, n_terrainGrid)
 
@@ -256,7 +256,7 @@ class MyWidget(QtWidgets.QWidget):
             sectionHexColor = terrainColorsInHex[i]
             generateTerrainColorSectionExtractionVEXExpression(sectionHexColor)
             vexExpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt')
-            hou.parm(f'/obj/terrain/{new_attrib_wrangle}/snippet').set(vexExpression)
+            hou.parm(f'/obj/terrain_height/{new_attrib_wrangle}/snippet').set(vexExpression)
             #new_attrib_wrangle.setPosition(hou.Vector2(0,-4)) 
             new_attrib_wrangle.setInput(0, n_attribFromMap)
             terrain_part_wrangle_nodes.append(new_attrib_wrangle)
@@ -271,45 +271,45 @@ class MyWidget(QtWidgets.QWidget):
             bScaledDown = round(sectionRGBColors[2]/255,2)
             new_color_node.parmTuple("color").set((rScaledDown, gScaledDown, bScaledDown))
             new_color_node.setPosition(hou.Vector2(i*2, -6)) 
-            targetAttribNode = hou.node(f'/obj/terrain/attribwrangle{i}')
+            targetAttribNode = hou.node(f'/obj/terrain_height/attribwrangle{i}')
             new_color_node.setInput(0, targetAttribNode)
             terrain_part_color_nodes.append(new_color_node)
 
         # Create object merge node to merge back all colors together, ready for extrusion
         n_merge_colors = n_terrain.createNode('merge', "merge_colors")
         for i in range(len(terrainColorsInHex)):
-            attribWrangleNode = hou.node(f'/obj/terrain/color{i}/')
+            attribWrangleNode = hou.node(f'/obj/terrain_height/color{i}/')
             n_merge_colors.setInput(i, attribWrangleNode)
         n_merge_colors.setPosition(hou.Vector2(0,-6))
 
         # Create attribute promote node
         n_attrib_promote = n_terrain.createNode("attribpromote", "attribpromote")
-        hou.parm('/obj/terrain/attribpromote/inname').set("Cd")
-        hou.parm('/obj/terrain/attribpromote/outclass').set(1)
-        hou.parm('/obj/terrain/attribpromote/deletein').set(0)
+        hou.parm('/obj/terrain_height/attribpromote/inname').set("Cd")
+        hou.parm('/obj/terrain_height/attribpromote/outclass').set(1)
+        hou.parm('/obj/terrain_height/attribpromote/deletein').set(0)
         n_attrib_promote.setPosition(hou.Vector2(6, 0)) 
         n_attrib_promote.setInput(0, n_merge_colors)
 
         # Create attribute wrangle node
         n_attrib_wrangle = n_terrain.createNode('attribwrangle', 'attribwrangleforextrusion')
-        hou.parm('/obj/terrain/attribwrangleforextrusion/class').set(1)
+        hou.parm('/obj/terrain_height/attribwrangleforextrusion/class').set(1)
         terrainAttribWrangleVEXpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainAttribWrangleVEXpression.txt')
-        hou.parm('/obj/terrain/attribwrangleforextrusion/snippet').set(terrainAttribWrangleVEXpression)
+        hou.parm('/obj/terrain_height/attribwrangleforextrusion/snippet').set(terrainAttribWrangleVEXpression)
         n_attrib_promote.setPosition(hou.Vector2(8, 0)) 
         n_attrib_wrangle.setInput(0, n_attrib_promote)
 
         # Create polyextrude node
         n_polyextrude_terrain = n_terrain.createNode("polyextrude", "polyextrude")
-        hou.parm('/obj/terrain/polyextrude/splittype').set(0)
-        hou.parm('/obj/terrain/polyextrude/dist').set(1.0)
-        hou.parm('/obj/terrain/polyextrude/outputback').set(1)
-        hou.parm('/obj/terrain/polyextrude/uselocalzscaleattrib').set(1)
-        hou.parm('/obj/terrain/polyextrude/localzscaleattrib').set("zextrusion")
+        hou.parm('/obj/terrain_height/polyextrude/splittype').set(0)
+        hou.parm('/obj/terrain_height/polyextrude/dist').set(1.0)
+        hou.parm('/obj/terrain_height/polyextrude/outputback').set(1)
+        hou.parm('/obj/terrain_height/polyextrude/uselocalzscaleattrib').set(1)
+        hou.parm('/obj/terrain_height/polyextrude/localzscaleattrib').set("zextrusion")
         n_polyextrude_terrain.setPosition(hou.Vector2(10, 0)) 
         n_polyextrude_terrain.setInput(0, n_attrib_wrangle)
 
         n_terrain.layoutChildren()
-        hou.node('/obj/terrain/polyextrude').setDisplayFlag(True)
+        hou.node('/obj/terrain_height/polyextrude').setDisplayFlag(True)
         
         """
 
@@ -327,10 +327,10 @@ class MyWidget(QtWidgets.QWidget):
         """
         
     def reload(self):
-        hou.parm('/obj/terrain/attribfrommap/reload').pressButton()
+        hou.parm('/obj/terrain_height/attribfrommap/reload').pressButton()
 
         #delete terrain object
-        n_terrain = hou.node('/obj/terrain/')
+        n_terrain = hou.node('/obj/terrain_height/')
         n_terrain.destroy()
         global terrainColorsInHex
         terrainColorsInHex.clear()
@@ -338,13 +338,13 @@ class MyWidget(QtWidgets.QWidget):
         self.apply()
 
     def showOriginalImage(self):
-        hou.node('/obj/terrain/attribfrommap').setDisplayFlag(True)
+        hou.node('/obj/terrain_height/attribfrommap').setDisplayFlag(True)
 
     def showModifiedImage(self):
-        hou.node('/obj/terrain/merge_colors').setDisplayFlag(True)
+        hou.node('/obj/terrain_height/merge_colors').setDisplayFlag(True)
 
     def showExtrusion(self):
-        hou.node('/obj/terrain/polyextrude').setDisplayFlag(True)
+        hou.node('/obj/terrain_height/polyextrude').setDisplayFlag(True)
 
     def applyIdMap(self):
         OBJ = hou.node('/obj/')
@@ -481,7 +481,7 @@ def changeColorOnMap(index, newHexColor):
     rScaledDown = round(newRGBColors[0]/255,2)
     gScaledDown = round(newRGBColors[1]/255,2)
     bScaledDown = round(newRGBColors[2]/255,2)
-    targetColorNode = hou.node(f'/obj/terrain/color{index}/')
+    targetColorNode = hou.node(f'/obj/terrain_height/color{index}/')
     targetColorNode.parmTuple("color").set((rScaledDown, gScaledDown, bScaledDown))
     targetColorNode
 
