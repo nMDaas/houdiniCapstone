@@ -36,6 +36,12 @@ id_part_wrangle_nodes = []
 global terrain_part_color_nodes
 terrain_part_color_nodes = []
 
+# global array that determines whether an id receives noise or not
+global g_IDNoiseBool
+g_IDNoiseBool = []
+
+terrain_part_color_nodes = []
+
 def printParms(node):
     for p in node.parms():
         print(p)
@@ -104,6 +110,12 @@ def addIDGroupsToGUI(self):
 
         # Create a dropdown
         dropdown_box = QtWidgets.QComboBox()
+        dropdown_box.addItem("Select an option...")
+        items = ["Option 1", "Option 2", "Option 3"]
+        dropdown_box.addItems(items)
+
+        # Connect signal for selection detection
+        dropdown_box.currentIndexChanged.connect(lambda index, row=i: self.on_dropdown_changed(index, row))
 
         # Add to grid layout (label on the left, color display frame on the right)
         id_grid_layout.addWidget(label, i + 1, 0)
@@ -151,6 +163,11 @@ def generateTerrainColorSectionExtractionVEXExpression(hexColor):
     with open('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt', "w") as file:
         file.write(fileContent)
 
+def init_g_IDNoiseBool():
+    global g_IDNoiseBool
+    for i in range(len(idColorsHex)):
+        g_IDNoiseBool.append(0)
+
 # Create Terrain Texture Node
 def createTerrainTexture(self):
         
@@ -181,34 +198,42 @@ def createTerrainTexture(self):
     lastNode = n_heightfield_blur
     
     global idColorsHex
+    init_g_IDNoiseBool() #initially this global sets every texture to not have noise 
+
+    global g_IDNoiseBool
+
     for i in range(len(idColorsHex)):
-        # create a object merge node that gets OUT_id{i}
-        merge_node_name = 'merge_id' + str(i)
-        new_merge_node = n_terrain_texture.createNode("object_merge", merge_node_name)
-        new_merge_node.setPosition(hou.Vector2(8, -14-(i*5))) 
-        target_id_object = f'/obj/id/OUT_id{i}'
-        hou.parm(f'/obj/terrain_texture/{merge_node_name}/objpath1').set(target_id_object)
 
-        # create a heightfield mask by object node that takes in n_heightfield_project and the object merge node as input
-        mask_node_name = 'mask_id' + str(i)
-        new_mask_node = n_terrain_texture.createNode("heightfield_maskbyobject", mask_node_name)
-        new_mask_node.setInput(0, lastNode) 
-        new_mask_node.setInput(1, new_merge_node) 
-        new_mask_node.setPosition(hou.Vector2(6, -14-(i*5))) 
-        hou.parm(f'/obj/terrain_texture/{mask_node_name}/blurradius').set(23)
+        if (g_IDNoiseBool[i] == 1):
+            # create a object merge node that gets OUT_id{i}
+            merge_node_name = 'merge_id' + str(i)
+            new_merge_node = n_terrain_texture.createNode("object_merge", merge_node_name)
+            new_merge_node.setPosition(hou.Vector2(8, -14-(i*5))) 
+            target_id_object = f'/obj/id/OUT_id{i}'
+            hou.parm(f'/obj/terrain_texture/{merge_node_name}/objpath1').set(target_id_object)
 
-        # Create noise node that takes in the blur and the mask node as input
-        noise_node_name = 'noise' + str(i) 
-        new_noise_node = n_terrain_texture.createNode("heightfield_noise", noise_node_name)
-        hou.parm(f'/obj/terrain_texture/{noise_node_name}/elementsize').set(275)
-        new_noise_node.setInput(0, lastNode)
-        new_noise_node.setInput(1, new_mask_node)
-        new_noise_node.setPosition(hou.Vector2(4, -18-(i*5))) 
+            # create a heightfield mask by object node that takes in n_heightfield_project and the object merge node as input
+            mask_node_name = 'mask_id' + str(i)
+            new_mask_node = n_terrain_texture.createNode("heightfield_maskbyobject", mask_node_name)
+            new_mask_node.setInput(0, lastNode) 
+            new_mask_node.setInput(1, new_merge_node) 
+            new_mask_node.setPosition(hou.Vector2(6, -14-(i*5))) 
+            hou.parm(f'/obj/terrain_texture/{mask_node_name}/blurradius').set(23)
+
+            # Create noise node that takes in the blur and the mask node as input
+            noise_node_name = 'noise' + str(i) 
+            new_noise_node = n_terrain_texture.createNode("heightfield_noise", noise_node_name)
+            hou.parm(f'/obj/terrain_texture/{noise_node_name}/elementsize').set(275)
+            new_noise_node.setInput(0, lastNode)
+            new_noise_node.setInput(1, new_mask_node)
+            new_noise_node.setPosition(hou.Vector2(4, -18-(i*5))) 
+
+            lastNode = new_noise_node
 
         # Create a null node to mark the end of editing this ID
         null_name = 'OUT_terrain_id' + str(i)
         new_null_node = n_terrain_texture.createNode("null", null_name)
-        new_null_node.setInput(0, new_noise_node)
+        new_null_node.setInput(0, lastNode)
         new_null_node.setPosition(hou.Vector2(4, -20-(i*5))) 
         lastNode = new_null_node
 
@@ -265,6 +290,18 @@ class MyWidget(QtWidgets.QWidget):
         # update global variable terrainColorsInHex and change color on the map in Houdini
         terrainColorsInHex[idx] = new_hex_color
         changeColorOnMap(idx, new_hex_color)
+
+    def on_dropdown_changed(self, index, row):
+        # Access the selected dropdown box text
+        dropdown_box = self.ui.idGridScrollArea.widget().layout().itemAtPosition(row + 1, 2).widget()
+        selected_text = dropdown_box.currentText()
+        
+        # Handle the selected value
+        print(f"Row {row}: Selected index {index}, Text: {selected_text}")
+        if selected_text == "Select an option...":
+            print("No valid option selected.")
+        else:
+            print(f"Row {row}: You selected {selected_text}.")
 
     def apply(self):
         # Create terrain Height node

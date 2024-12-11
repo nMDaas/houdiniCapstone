@@ -257,36 +257,6 @@
                 </layout>
             </widget>
         </widget>
-
-        <!-- Added Dropdown Widget -->
-        <widget class="QComboBox" name="testDropdown">
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>520</y>
-                    <width>200</width>
-                    <height>32</height>
-                </rect>
-            </property>
-            <property name="toolTip">
-                <string>Select an option</string>
-            </property>
-            <item>
-                <property name="text">
-                    <string>Flat Land</string>
-                </property>
-            </item>
-            <item>
-                <property name="text">
-                    <string>Noise</string>
-                </property>
-            </item>
-            <item>
-                <property name="text">
-                    <string>Mix</string>
-                </property>
-            </item>
-        </widget>
     </widget>
     <resources/>
     <connections/>
