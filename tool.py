@@ -40,6 +40,17 @@ terrain_part_color_nodes = []
 global g_IDNoiseBool
 g_IDNoiseBool = []
 
+# stores different terrain options
+global g_TerrainOptions
+g_TerrainOptions = []
+
+# stores current dropdown values for each id
+global g_DropdownValues
+g_DropdownValues = []
+
+g_TerrainOptions.append("Terrain Noise")
+g_TerrainOptions.append("Flat Land")
+
 terrain_part_color_nodes = []
 
 def printParms(node):
@@ -99,6 +110,7 @@ def rgb_brightened_by_val(rgb_tuple, new_brightness):
 
 def addIDGroupsToGUI(self):
     global idColorsHex
+    global g_DropdownValues
     for i in range(len(idColorsHex)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"{idColorsHex[i]}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=idColorsHex[i])  # Custom QFrame
@@ -110,8 +122,8 @@ def addIDGroupsToGUI(self):
 
         # Create a dropdown
         dropdown_box = QtWidgets.QComboBox()
-        dropdown_box.addItem("Select an option...")
-        items = ["Option 1", "Option 2", "Option 3"]
+        dropdown_box.addItem("Select Texture")
+        items = ["Terrain Noise", "Flat Land"]
         dropdown_box.addItems(items)
 
         # Connect signal for selection detection
@@ -177,7 +189,6 @@ def createTerrainTexture(self):
 
     # Create heightfield node
     n_heightfield = n_terrain_texture.createNode("heightfield", "heightfield")
-    print(n_heightfield.path())
 
     hou.parm('/obj/terrain_texture/heightfield/sizex').set(500)
     hou.parm('/obj/terrain_texture/heightfield/sizey').set(500)
@@ -246,7 +257,7 @@ def createTerrainTexture(self):
     hou.node('obj/id/').setDisplayFlag(False)
     hou.node('obj/terrain_height/').setDisplayFlag(False)
 
-    addIDGroupsToGUI(self)
+    #addIDGroupsToGUI(self)
 
 def testPrintImageHeightWidth():
     with Image.open('/Users/natashadaas/houdiniCapstone/media.jpg') as img:
@@ -292,14 +303,31 @@ class MyWidget(QtWidgets.QWidget):
         changeColorOnMap(idx, new_hex_color)
 
     def on_dropdown_changed(self, index, row):
+        global g_TerrainOptions
+
         # Access the selected dropdown box text
         dropdown_box = self.ui.idGridScrollArea.widget().layout().itemAtPosition(row + 1, 2).widget()
-        selected_text = dropdown_box.currentText()
+        print(g_TerrainOptions[index - 1])  # Check the value you're passing
+        print([dropdown_box.itemText(i) for i in range(dropdown_box.count())])  # Check all dropdown items
+        dropdown_box.setCurrentIndex(index)
+        selected_text = g_TerrainOptions[index - 1]
+
+        global g_IDNoiseBool
         
         # Handle the selected value
         print(f"Row {row}: Selected index {index}, Text: {selected_text}")
-        if selected_text == "Select an option...":
+        if selected_text == "Select Texture":
             print("No valid option selected.")
+        elif selected_text == "Terrain Noise":
+            g_IDNoiseBool[row] = 1 #this id should be set to true for the noise map
+            n_terrain_texture = hou.node('/obj/terrain_texture/')
+            n_terrain_texture.destroy()
+            createTerrainTexture(self)
+        elif selected_text == "Flat Land":
+            g_IDNoiseBool[row] = 0 #this id should be set to false for the noise map
+            n_terrain_texture = hou.node('/obj/terrain_texture/')
+            n_terrain_texture.destroy()
+            createTerrainTexture(self)
         else:
             print(f"Row {row}: You selected {selected_text}.")
 
@@ -504,8 +532,16 @@ class MyWidget(QtWidgets.QWidget):
             new_null_node.setPosition(hou.Vector2(i,-10)) 
             new_null_node.setInput(0, targetPolyExtrudeNode)
 
+        # dropdown values for each id should be initially not set
+        global g_DropdownValues
+        for i in range(len(idColorsHex)):
+            g_DropdownValues.append("Select Texture")
+
         # Now that that's done, create masks in the terrain_texture node and create the heightfield based on ids
         createTerrainTexture(self)
+
+        # add id colors to UI based on texture id map
+        addIDGroupsToGUI(self)
 
 def getIDAttribMapColors(self, node):
     node = node.geometry()
