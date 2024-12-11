@@ -7,7 +7,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>463</width>
-                <height>650</height>
+                <height>670</height>
             </rect>
         </property>
         <property name="windowTitle">
@@ -257,6 +257,38 @@
                 </layout>
             </widget>
         </widget>
+
+        <widget class="QWidget" name="LODsection">
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>590</y>
+                    <width>500</width>
+                    <height>100</height>
+                </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                    <widget class="QLabel" name="simpleTextLabel">
+                        <property name="text">
+                            <string>LOD level: </string>
+                        </property>
+                    </widget>
+                </item>
+            </layout>
+        </widget>
+        <widget class="QLineEdit" name="LODEntryBox">
+            <property name="geometry">
+                <rect>
+                    <x>100</x>
+                    <y>625</y>
+                    <width>250</width>
+                    <height>30</height>
+                </rect>
+            </property>
+        </widget>
+
+
     </widget>
     <resources/>
     <connections/>

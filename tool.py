@@ -248,12 +248,21 @@ def createTerrainTexture(self):
         new_null_node.setPosition(hou.Vector2(4, -20-(i*5))) 
         lastNode = new_null_node
 
-    n_null = n_terrain_texture.createNode("null", "OUT_TERRAIN_HEIGHT")
+    n_null = n_terrain_texture.createNode("null", "OUT_TERRAIN_TEXTURE")
     n_null.setInput(0, lastNode)
     n_null.setPosition(hou.Vector2(12,0)) 
 
+    # add convert node
+    n_convert = n_terrain_texture.createNode("convert", "convert_to_polygons")
+    n_convert.setInput(0, n_null)
+
+    # Add polyreduce node
+    n_polyreduce = n_terrain_texture.createNode("polyreduce", "polyreduce")
+    n_polyreduce.setInput(0, n_convert)
+    n_polyreduce.parm("percentage").set(100)  # Set reduction percentage (adjust as needed)
+
     n_terrain_texture.layoutChildren()
-    n_null.setDisplayFlag(True) 
+    n_polyreduce.setDisplayFlag(True) 
     hou.node('obj/id/').setDisplayFlag(False)
     hou.node('obj/terrain_height/').setDisplayFlag(False)
 
@@ -281,6 +290,15 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.extrusion_button.clicked.connect(self.showExtrusion)
         self.ui.select_id_button.clicked.connect(selectMap)
         self.ui.apply_id_button.clicked.connect(self.applyIdMap)
+
+        # Connect the QLineEdit to a function for LOD changes
+        self.ui.LODEntryBox.textChanged.connect(self.on_LOD_level_change)
+
+    def on_LOD_level_change(self):
+        text = self.ui.LODEntryBox.text()
+        n_polyreduce = hou.node('obj/terrain_texture/polyreduce')
+        n_polyreduce.parm("percentage").set(int(text))
+        print(f"Text changed: {text}")
 
     def handleInputChange(self, new_text, idx):
         # update the brightness in the global g_BrightnessValues map
