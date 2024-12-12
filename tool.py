@@ -113,19 +113,27 @@ def rgb_brightened_by_val(rgb_tuple, new_brightness):
 
 def addWaterGroupsToGUI(self):
     global g_waterColorsInHex
-    #print("len(idColorsHex): " + str(len(g_waterColorsInHex)))
+    print("len(idColorsHex): " + str(len(g_waterColorsInHex)))
     for i in range(len(g_waterColorsInHex)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"{g_waterColorsInHex[i]}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=g_waterColorsInHex[i])  # Custom QFrame
-        #global g_ColorDisplayFrames
-        #g_ColorDisplayFrames.append(color_display_frame)
-
+    
         water_grid_widget = self.ui.waterGridScrollArea.widget()  # Access colorGridWidget
         water_grid_layout = water_grid_widget.layout() 
+
+        # Create a text entry box (QLineEdit)
+        text_entry = QtWidgets.QLineEdit()
+        text_entry.setPlaceholderText("Enter Height on Y Axis")  # Optional placeholder text
+        text_entry.textChanged.connect(lambda text, idx=i: self.handleHeightInputChange(text, idx))
+
+        # Access the water grid widget and layout
+        water_grid_widget = self.ui.waterGridScrollArea.widget()
+        water_grid_layout = water_grid_widget.layout()
 
         # Add to grid layout (label on the left, color display frame on the right)
         water_grid_layout.addWidget(label, i + 1, 0)
         water_grid_layout.addWidget(color_display_frame, i + 1, 1)
+        water_grid_layout.addWidget(text_entry, i + 1, 2)
 
 def addIDGroupsToGUI(self):
     global idColorsHex
@@ -170,10 +178,12 @@ def addHexColorCodeGroupsToGUI(self):
         global g_BrightnessValues
         initialBrightness = str(rgb_to_brightness(hexToRGB(terrainColorsInHex[i])))
         g_BrightnessValues.append(initialBrightness)
+        input_box.setPlaceholderText("Enter Height")
         input_box.setText(initialBrightness)  # Pre-fill with the current hex code
         input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
         # Connect the input box text change signal to the method that handles it
         input_box.textChanged.connect(lambda text, idx=i: self.handleInputChange(text, idx))
+
 
         # Add to grid layout (label on the left, color display frame on the right)
         color_grid_layout.addWidget(label, i + 1, 0)
@@ -313,7 +323,8 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.reload_water_button.clicked.connect(self.reload_water)
         self.ui.texture_map_button.clicked.connect(self.showTextureIDMap)
         self.ui.texture_terrain_button.clicked.connect(self.showTexturedTerrain)
-        #self.ui.apply_id_button.clicked.connect(self.applyIdMap)
+        self.ui.water_map_button.clicked.connect(self.showWaterMap)
+        self.ui.water_geo_button.clicked.connect(self.showWaterGeo)
 
         # Connect the QLineEdit to a function for LOD changes
         self.ui.LODEntryBox.textChanged.connect(self.on_LOD_level_change)
@@ -324,6 +335,9 @@ class MyWidget(QtWidgets.QWidget):
         n_polyreduce.parm("percentage").set(int(text))
         print(f"Text changed: {text}")
 
+    def handleHeightInputChange(self, new_text, idx):
+        hou.parm(f'/obj/water/transform{idx}/ty').set(float(new_text))
+
     def handleInputChange(self, new_text, idx):
         # update the brightness in the global g_BrightnessValues map
         global g_BrightnessValues
@@ -333,7 +347,7 @@ class MyWidget(QtWidgets.QWidget):
         global terrainColorsInHex
         old_hex_color = terrainColorsInHex[idx]
         old_rgb_color = hexToRGB(old_hex_color)
-        new_rgb_tuple = rgb_brightened_by_val(old_rgb_color, float(new_text))
+        new_rgb_tuple = rgb_brightened_by_val(old_rgb_color, int(new_text))
         new_hex_color = rgb_to_hex(new_rgb_tuple)
 
         # update the color of the correct display frame
@@ -557,7 +571,25 @@ class MyWidget(QtWidgets.QWidget):
         self.applyIdMap()
 
     def reload_water(self):
-        print("trying to reload water")
+        hou.parm('/obj/water/waterattribfrommap/reload').pressButton()
+
+        #delete water object
+        n_water = hou.node('/obj/water/')
+        n_water.destroy()
+
+        global g_waterColorsInHex
+        g_waterColorsInHex.clear()
+
+        water_grid_widget = self.ui.waterGridScrollArea.widget()  # Access colorGridWidget
+        water_grid_layout = water_grid_widget.layout() 
+
+        # Remove all widgets in the layout
+        for i in reversed(range(water_grid_layout.count())):
+            widget = water_grid_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater() 
+
+        self.applyWaterMap()
 
     def showOriginalImage(self):
         hou.node('/obj/terrain_height/attribfrommap').setDisplayFlag(True)
@@ -567,21 +599,25 @@ class MyWidget(QtWidgets.QWidget):
 
     def showExtrusion(self):
         hou.node('/obj/terrain_height/polyextrude').setDisplayFlag(True)
+   
     def showTextureIDMap(self):
-        print("trying to show texture id map")
         hou.node('/obj/terrain_texture').setDisplayFlag(False)
         hou.node('/obj/id').setDisplayFlag(True)
-        #hou.node('/obj/id/id_attribfrommap').setDisplayFlag(True)
 
     def showTexturedTerrain(self):
-        print("trying to show texture terain")
         hou.node('/obj/terrain_texture').setDisplayFlag(True)
         hou.node('/obj/id').setDisplayFlag(False)
         #hou.node('/obj/id/').setDisplayFlag(False)
         #hou.node('/obj/terrain_texture/polyreduce').setDisplayFlag(True)
 
-    def reload_water(self):
-        print("trying to reload water")
+    def showWaterMap(self):
+        hou.node('/obj/terrain_texture').setDisplayFlag(False)
+        hou.node('/obj/water/waterattribfrommap').setDisplayFlag(True)
+
+    def showWaterGeo(self):
+        hou.node('/obj/terrain_texture').setDisplayFlag(True)
+        hou.node('/obj/water/merge_water').setDisplayFlag(True)
+
 
     def applyWaterMap(self):
         # Create water Geometry node
@@ -598,10 +634,10 @@ class MyWidget(QtWidgets.QWidget):
         
         # Create attribute from parameter node
         global n_attribFromMap
-        n_attribFromMap = n_water.createNode('attribfrommap', 'attribfrommap')
-        hou.parm('/obj/water/attribfrommap/filename').set(filepaths[2])
-        hou.parm('/obj/water/attribfrommap/uv_invertv').set(1)
-        hou.parm('/obj/water/attribfrommap/srccolorspace').set("linear")
+        n_attribFromMap = n_water.createNode('attribfrommap', 'waterattribfrommap')
+        hou.parm('/obj/water/waterattribfrommap/filename').set(filepaths[2])
+        hou.parm('/obj/water/waterattribfrommap/uv_invertv').set(1)
+        hou.parm('/obj/water/waterattribfrommap/srccolorspace').set("linear")
         n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
         n_attribFromMap.setInput(0, n_waterGrid)
 
@@ -641,6 +677,8 @@ class MyWidget(QtWidgets.QWidget):
         n_merge_water.setPosition(hou.Vector2(0,-6))
 
         n_water.layoutChildren()
+
+        hou.node('/obj/water/merge_water').setDisplayFlag(True)
 
     def applyIdMap(self):
         OBJ = hou.node('/obj/')
