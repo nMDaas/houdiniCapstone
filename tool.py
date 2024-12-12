@@ -12,8 +12,11 @@ filepaths = []
 
 global n_attribFromMap
 
-global terrainHexCodeLabels
-terrainHexCodeLabels = []
+global g_terrainHexCodeLabels
+g_terrainHexCodeLabels = []
+
+global g_terrainHeightTextBoxes
+g_terrainHeightTextBoxes = []
 
 global terrainColorsInHex 
 terrainColorsInHex = []
@@ -169,9 +172,9 @@ def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
     for i in range(len(terrainColorsInHex)):  # Adjust the range for the number of rows
         
-        global terrainHexCodeLabels
+        global g_terrainHexCodeLabels
         label = QtWidgets.QLabel(f"{terrainColorsInHex[i]}")
-        terrainHexCodeLabels.append(label)
+        g_terrainHexCodeLabels.append(label)
         
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
         global g_ColorDisplayFrames
@@ -188,7 +191,8 @@ def addHexColorCodeGroupsToGUI(self):
         input_box.setPlaceholderText("Enter Height")
         input_box.setText(initialBrightness)  # Pre-fill with the current hex code
         input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
-        
+        global g_terrainHeightTextBoxes
+        g_terrainHeightTextBoxes.append(input_box)
         
         # Connect the input box text change signal to the method that handles it
         input_box.textChanged.connect(lambda text, idx=i: self.handleInputChange(text, idx))
@@ -351,6 +355,16 @@ class MyWidget(QtWidgets.QWidget):
         # update the brightness in the global g_BrightnessValues map
         global g_BrightnessValues
         g_BrightnessValues[idx] = float(new_text)
+
+        global g_terrainHeightTextBoxes
+
+        if (int(new_text) < 10):
+            new_text = "10"
+            g_terrainHeightTextBoxes[idx].setText("10")
+        
+        if (int(new_text) > 255):
+            new_text = "255"
+            g_terrainHeightTextBoxes[idx].setText("255")
         
         # calculate the brightened color
         global terrainColorsInHex
@@ -362,8 +376,8 @@ class MyWidget(QtWidgets.QWidget):
         # update the color of the correct display frame
         global g_ColorDisplayFrames
         g_ColorDisplayFrames[idx].change_color(new_hex_color)
-        global terrainHexCodeLabels
-        terrainHexCodeLabels[idx].setText(f"{new_hex_color}")
+        global g_terrainHexCodeLabels
+        g_terrainHexCodeLabels[idx].setText(f"{new_hex_color}")
 
         # update global variable terrainColorsInHex and change color on the map in Houdini
         terrainColorsInHex[idx] = new_hex_color
