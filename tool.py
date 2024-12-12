@@ -344,6 +344,15 @@ class MyWidget(QtWidgets.QWidget):
 
     def on_LOD_level_change(self):
         text = self.ui.LODEntryBox.text()
+
+        if (int(text) > 100):
+            text = "100"
+            self.ui.LODEntryBox.setText("100")
+
+        if (int(text) < 1):
+            text = "1"
+            self.ui.LODEntryBox.setText("1")
+
         n_polyreduce = hou.node('obj/terrain_texture/polyreduce')
         n_polyreduce.parm("percentage").set(int(text))
         print(f"Text changed: {text}")
