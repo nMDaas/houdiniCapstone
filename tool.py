@@ -12,6 +12,9 @@ filepaths = []
 
 global n_attribFromMap
 
+global terrainHexCodeLabels
+terrainHexCodeLabels = []
+
 global terrainColorsInHex 
 terrainColorsInHex = []
 
@@ -165,7 +168,11 @@ def addIDGroupsToGUI(self):
 def addHexColorCodeGroupsToGUI(self):
     # Add labels and color display frames to the grid layout
     for i in range(len(terrainColorsInHex)):  # Adjust the range for the number of rows
+        
+        global terrainHexCodeLabels
         label = QtWidgets.QLabel(f"{terrainColorsInHex[i]}")
+        terrainHexCodeLabels.append(label)
+        
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=terrainColorsInHex[i])  # Custom QFrame
         global g_ColorDisplayFrames
         g_ColorDisplayFrames.append(color_display_frame)
@@ -181,6 +188,8 @@ def addHexColorCodeGroupsToGUI(self):
         input_box.setPlaceholderText("Enter Height")
         input_box.setText(initialBrightness)  # Pre-fill with the current hex code
         input_box.setMaximumWidth(100)  # Adjust the width of the input box if needed
+        
+        
         # Connect the input box text change signal to the method that handles it
         input_box.textChanged.connect(lambda text, idx=i: self.handleInputChange(text, idx))
 
@@ -353,6 +362,8 @@ class MyWidget(QtWidgets.QWidget):
         # update the color of the correct display frame
         global g_ColorDisplayFrames
         g_ColorDisplayFrames[idx].change_color(new_hex_color)
+        global terrainHexCodeLabels
+        terrainHexCodeLabels[idx].setText(f"{new_hex_color}")
 
         # update global variable terrainColorsInHex and change color on the map in Houdini
         terrainColorsInHex[idx] = new_hex_color
