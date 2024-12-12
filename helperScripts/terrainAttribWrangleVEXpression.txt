@@ -19,4 +19,4 @@ float maxExtrusion = 17000.0; // Maximum height for pure white
 float minExtrusion = 0.1;   // Minimum height for pure black
 
 // Calculate extrusion based on whiteness level
-@zextrusion = minExtrusion + (maxExtrusion - minExtrusion) * whitenessLevel;
+@zextrusion = (minExtrusion + (maxExtrusion - minExtrusion) * whitenessLevel) * 3;
