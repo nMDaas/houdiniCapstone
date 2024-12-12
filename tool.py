@@ -111,6 +111,7 @@ def rgb_brightened_by_val(rgb_tuple, new_brightness):
 def addIDGroupsToGUI(self):
     global idColorsHex
     global g_DropdownValues
+    print("len(idColorsHex): " + str(len(idColorsHex)))
     for i in range(len(idColorsHex)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"{idColorsHex[i]}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=idColorsHex[i])  # Custom QFrame
@@ -284,11 +285,12 @@ class MyWidget(QtWidgets.QWidget):
         # Connect buttons to functions
         self.ui.select_button.clicked.connect(self.selectHeightMap)
         self.ui.reload_button.clicked.connect(self.reload)
+        self.ui.reload_id_button.clicked.connect(self.reload_id)
         self.ui.original_image_button.clicked.connect(self.showOriginalImage)
         self.ui.modified_image_button.clicked.connect(self.showModifiedImage)
         self.ui.extrusion_button.clicked.connect(self.showExtrusion)
-        self.ui.select_id_button.clicked.connect(self.selectHeightMap)
-        self.ui.apply_id_button.clicked.connect(self.applyIdMap)
+        self.ui.select_id_button.clicked.connect(self.selectTextureIDMap)
+        #self.ui.apply_id_button.clicked.connect(self.applyIdMap)
 
         # Connect the QLineEdit to a function for LOD changes
         self.ui.LODEntryBox.textChanged.connect(self.on_LOD_level_change)
@@ -459,6 +461,7 @@ class MyWidget(QtWidgets.QWidget):
         """
         
     def selectHeightMap(self):
+        print("HIIII")
         global initial_directory
         filepath, _ = QFileDialog.getOpenFileName(None, "Select Image", initial_directory, "Images (*.png *.jpg *.bmp)")
         if filepath:
@@ -466,6 +469,15 @@ class MyWidget(QtWidgets.QWidget):
             global filepaths
             filepaths.append(filepath)
             self.apply()
+
+    def selectTextureIDMap(self):
+        global initial_directory
+        filepath, _ = QFileDialog.getOpenFileName(None, "Select Image", initial_directory, "Images (*.png *.jpg *.bmp)")
+        if filepath:
+            print(f"Selected file: {filepath}")
+            global filepaths
+            filepaths.append(filepath)
+            self.applyIdMap()
 
     def reload(self):
         hou.parm('/obj/terrain_height/attribfrommap/reload').pressButton()
@@ -477,6 +489,40 @@ class MyWidget(QtWidgets.QWidget):
         terrainColorsInHex.clear()
 
         self.apply()
+
+    def reload_id(self):
+        hou.parm('/obj/id/id_attribfrommap/reload').pressButton()
+
+        #delete id object
+        n_id = hou.node('/obj/id/')
+        n_id.destroy()
+
+        #delete terrain_texture object
+        n_terrain_texture = hou.node('/obj/terrain_texture/')
+        n_terrain_texture.destroy()
+
+        global idColorsHex
+        idColorsHex.clear()
+
+        global id_part_wrangle_nodes
+        id_part_wrangle_nodes.clear()
+
+        global g_DropdownValues
+        g_DropdownValues.clear()
+
+        global g_IDNoiseBool
+        g_IDNoiseBool.clear
+
+        id_grid_widget = self.ui.idGridScrollArea.widget()  # Access colorGridWidget
+        id_grid_layout = id_grid_widget.layout() 
+
+        # Remove all widgets in the layout
+        for i in reversed(range(id_grid_layout.count())):
+            widget = id_grid_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater() 
+
+        self.applyIdMap()
 
     def showOriginalImage(self):
         hou.node('/obj/terrain_height/attribfrommap').setDisplayFlag(True)

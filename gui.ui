@@ -147,7 +147,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>330</y>
+                    <y>270</y>
                     <width>361</width>
                     <height>100</height>
                 </rect>
@@ -159,7 +159,7 @@
                         <item>
                             <widget class="QLabel" name="label">
                                 <property name="text">
-                                    <string>Select ID map: </string>
+                                    <string>Select Texture Map: </string>
                                 </property>
                             </widget>
                         </item>
@@ -172,28 +172,21 @@
                         </property>
                     </widget>
                 </item>
+                <item row="0" column="2">
+                    <widget class="QPushButton" name="reload_id_button">
+                        <property name="text">
+                            <string>Reload</string>
+                        </property>
+                    </widget>
+                </item>
             </layout>
-        </widget>
-
-        <widget class="QPushButton" name="apply_id_button">
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>400</y>
-                    <width>100</width>
-                    <height>32</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>Apply</string>
-            </property>
         </widget>
 
         <widget class="QWidget" name="applyTexturesInstruction">
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>410</y>
+                    <y>310</y>
                     <width>500</width>
                     <height>100</height>
                 </rect>
@@ -213,8 +206,8 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>480</y>
-                    <width>361</width>
+                    <y>350</y>
+                    <width>380</width>
                     <height>130</height>
                 </rect>
             </property>
