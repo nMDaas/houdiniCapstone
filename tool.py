@@ -758,7 +758,8 @@ def getAttribMapWaterColors(self, node):
     
     for scaled_color, count in color_groups.items():
         #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
-        if count >= 20:
+        notWater = (sum(scaled_color) / 3) < 30
+        if count >= 20 and not notWater:
             g_waterColorsInHex.append(rgb_to_hex(scaled_color).strip())
             print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
             
