@@ -113,10 +113,10 @@ def rgb_brightened_by_val(rgb_tuple, new_brightness):
 
 def addWaterGroupsToGUI(self):
     global g_waterColorsInHex
-    print("len(idColorsHex): " + str(len(g_waterColorsInHex)))
+    #print("len(idColorsHex): " + str(len(g_waterColorsInHex)))
     for i in range(len(g_waterColorsInHex)):  # Adjust the range for the number of rows
-        label = QtWidgets.QLabel(f"{idColorsHex[i]}")
-        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=idColorsHex[i])  # Custom QFrame
+        label = QtWidgets.QLabel(f"{g_waterColorsInHex[i]}")
+        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=g_waterColorsInHex[i])  # Custom QFrame
         #global g_ColorDisplayFrames
         #g_ColorDisplayFrames.append(color_display_frame)
 
@@ -509,19 +509,6 @@ class MyWidget(QtWidgets.QWidget):
             filepaths.append(filepath)
             self.applyWaterMap()
 
-           
-
-            """
-
-            
-
-            # Call getAttribMapColors with self - display different colors found and populate terrainColorsInHex
-            getAttribMapWaterColors(self, n_attribFromMap)
-
-            addWaterGroupsToGUI(self)
-            """
-
-
     def reload(self):
         hou.parm('/obj/terrain_height/attribfrommap/reload').pressButton()
 
@@ -614,7 +601,29 @@ class MyWidget(QtWidgets.QWidget):
             hou.parm(f'/obj/water/{new_attrib_wrangle}/snippet').set(vexExpression)
             new_attrib_wrangle.setPosition(hou.Vector2(i,-4)) 
             new_attrib_wrangle.setInput(0, n_attribFromMap)
-            id_part_wrangle_nodes.append(new_attrib_wrangle)
+
+        # Create color node for each water group to "neutralize" and remove color
+        for i in range(len(g_waterColorsInHex)):
+            color_name = 'color' + str(i)
+            new_color_node = n_water.createNode("color", color_name)
+            targetAttribNode = hou.node(f'/obj/water/attribwrangle{i}')
+            new_color_node.setInput(0, targetAttribNode)
+
+        # Create transform node for each water group
+        for i in range(len(g_waterColorsInHex)):
+            transform_name = 'transform' + str(i)
+            new_transform_node = n_water.createNode("xform", transform_name)
+            targetColorNode = hou.node(f'/obj/water/color{i}')
+            new_transform_node.setInput(0, targetColorNode)
+
+        # Create object merge node to merge all water bodies together
+        n_merge_water = n_water.createNode('merge', "merge_water")
+        for i in range(len(g_waterColorsInHex)):
+            transformNode = hou.node(f'/obj/water/transform{i}/')
+            n_merge_water.setInput(i, transformNode)
+        n_merge_water.setPosition(hou.Vector2(0,-6))
+
+        n_water.layoutChildren()
 
     def applyIdMap(self):
         OBJ = hou.node('/obj/')
