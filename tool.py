@@ -15,6 +15,9 @@ global n_attribFromMap
 global terrainColorsInHex 
 terrainColorsInHex = []
 
+global g_waterColorsInHex
+g_waterColorsInHex = []
+
 global idColorsHex
 idColorsHex = []
 
@@ -108,10 +111,26 @@ def rgb_brightened_by_val(rgb_tuple, new_brightness):
 
     return (r_new, g_new, b_new)
 
+def addWaterGroupsToGUI(self):
+    global g_waterColorsInHex
+    print("len(idColorsHex): " + str(len(g_waterColorsInHex)))
+    for i in range(len(g_waterColorsInHex)):  # Adjust the range for the number of rows
+        label = QtWidgets.QLabel(f"{idColorsHex[i]}")
+        color_display_frame = ColorDisplayFrame(self, index=i, frameColor=idColorsHex[i])  # Custom QFrame
+        #global g_ColorDisplayFrames
+        #g_ColorDisplayFrames.append(color_display_frame)
+
+        water_grid_widget = self.ui.waterGridScrollArea.widget()  # Access colorGridWidget
+        water_grid_layout = water_grid_widget.layout() 
+
+        # Add to grid layout (label on the left, color display frame on the right)
+        water_grid_layout.addWidget(label, i + 1, 0)
+        water_grid_layout.addWidget(color_display_frame, i + 1, 1)
+
 def addIDGroupsToGUI(self):
     global idColorsHex
     global g_DropdownValues
-    print("len(idColorsHex): " + str(len(idColorsHex)))
+    #print("len(idColorsHex): " + str(len(idColorsHex)))
     for i in range(len(idColorsHex)):  # Adjust the range for the number of rows
         label = QtWidgets.QLabel(f"{idColorsHex[i]}")
         color_display_frame = ColorDisplayFrame(self, index=i, frameColor=idColorsHex[i])  # Custom QFrame
@@ -290,6 +309,8 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.modified_image_button.clicked.connect(self.showModifiedImage)
         self.ui.extrusion_button.clicked.connect(self.showExtrusion)
         self.ui.select_id_button.clicked.connect(self.selectTextureIDMap)
+        self.ui.select_water_button.clicked.connect(self.selectWaterMap)
+        self.ui.reload_water_button.clicked.connect(self.reload_water)
         #self.ui.apply_id_button.clicked.connect(self.applyIdMap)
 
         # Connect the QLineEdit to a function for LOD changes
@@ -326,15 +347,15 @@ class MyWidget(QtWidgets.QWidget):
 
         # Access the selected dropdown box text
         dropdown_box = self.ui.idGridScrollArea.widget().layout().itemAtPosition(row + 1, 2).widget()
-        print(g_TerrainOptions[index - 1])  # Check the value you're passing
-        print([dropdown_box.itemText(i) for i in range(dropdown_box.count())])  # Check all dropdown items
+        #print(g_TerrainOptions[index - 1])  # Check the value you're passing
+        #print([dropdown_box.itemText(i) for i in range(dropdown_box.count())])  # Check all dropdown items
         dropdown_box.setCurrentIndex(index)
         selected_text = g_TerrainOptions[index - 1]
 
         global g_IDNoiseBool
         
         # Handle the selected value
-        print(f"Row {row}: Selected index {index}, Text: {selected_text}")
+        #print(f"Row {row}: Selected index {index}, Text: {selected_text}")
         if selected_text == "Select Texture":
             print("No valid option selected.")
         elif selected_text == "Terrain Noise":
@@ -479,6 +500,43 @@ class MyWidget(QtWidgets.QWidget):
             filepaths.append(filepath)
             self.applyIdMap()
 
+    def selectWaterMap(self):
+        global initial_directory
+        filepath, _ = QFileDialog.getOpenFileName(None, "Select Image", initial_directory, "Images (*.png *.jpg *.bmp)")
+        if filepath:
+            print(f"Selected file: {filepath}")
+            global filepaths
+            filepaths.append(filepath)
+            self.applyWaterMap()
+
+           
+
+            """
+
+            # Create grid node in water node
+            n_waterGrid = n_water.createNode('grid', 'waterGrid')
+            hou.parm('/obj/water/terrainGrid/sizex').set(500)
+            hou.parm('/obj/water/terrainGrid/sizey').set(500)
+            hou.parm('/obj/water/terrainGrid/rows').set(150)
+            hou.parm('/obj/water/terrainGrid/cols').set(150)
+            n_waterGrid.setPosition(hou.Vector2(0, 0))  
+            
+            # Create attribute from parameter node
+            global n_attribFromMap
+            n_attribFromMap = n_water.createNode('attribfrommap', 'attribfrommap')
+            hou.parm('/obj/water/attribfrommap/filename').set(filepaths[2])
+            hou.parm('/obj/water/attribfrommap/uv_invertv').set(1)
+            hou.parm('/obj/water/attribfrommap/srccolorspace').set("linear")
+            n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
+            n_attribFromMap.setInput(0, n_water)
+
+            # Call getAttribMapColors with self - display different colors found and populate terrainColorsInHex
+            getAttribMapWaterColors(self, n_attribFromMap)
+
+            addWaterGroupsToGUI(self)
+            """
+
+
     def reload(self):
         hou.parm('/obj/terrain_height/attribfrommap/reload').pressButton()
 
@@ -524,6 +582,9 @@ class MyWidget(QtWidgets.QWidget):
 
         self.applyIdMap()
 
+    def reload_water(self):
+        print("trying to reload water")
+
     def showOriginalImage(self):
         hou.node('/obj/terrain_height/attribfrommap').setDisplayFlag(True)
 
@@ -532,6 +593,11 @@ class MyWidget(QtWidgets.QWidget):
 
     def showExtrusion(self):
         hou.node('/obj/terrain_height/polyextrude').setDisplayFlag(True)
+
+    def applyWaterMap(self):
+        # Create water Geometry node
+        OBJ = hou.node('/obj/')
+        n_water = OBJ.createNode('geo', 'water')
 
     def applyIdMap(self):
         OBJ = hou.node('/obj/')
@@ -642,7 +708,64 @@ def getIDAttribMapColors(self, node):
             idColorsHex.append(rgb_to_hex(scaled_color).strip())
             #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
 
+def getAttribMapWaterColors(self, node):
+    node = node.geometry()
+    color_attribute = node.pointFloatAttribValues("Cd")
+    numCdComponents = 3  # RGB
+
+    # Create a list of color_attribute grouped into RGB colors for each grid cell
+    color_tuples = [
+        tuple(color_attribute[i:i + numCdComponents])
+        for i in range(0, len(color_attribute), numCdComponents)
+    ]
+
+    # Dictionary to count occurrences of each scaled color
+    color_groups = defaultdict(int)
+    
+    # Count occurrences of each color after multiplying by 255 and rounding to 0 decimal points
+    for color in color_tuples:
+        # Multiply by 255 and round to 0 decimal points
+        scaled_color = tuple(round(c * 255) for c in color)  
+        color_groups[scaled_color] += 1
+
+    global g_waterColorsInHex
+    
+    for scaled_color, count in color_groups.items():
+        if count >= 20:
+            g_waterColorsInHex.append(rgb_to_hex(scaled_color).strip())
+            #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
+            
+    #addHexColorCodeGroupsToGUI(self)
+
 def getAttribMapColors(self, node):
+    node = node.geometry()
+    color_attribute = node.pointFloatAttribValues("Cd")
+    numCdComponents = 3  # RGB
+
+    # Create a list of color_attribute grouped into RGB colors for each grid cell
+    color_tuples = [
+        tuple(color_attribute[i:i + numCdComponents])
+        for i in range(0, len(color_attribute), numCdComponents)
+    ]
+
+    # Dictionary to count occurrences of each scaled color
+    color_groups = defaultdict(int)
+    
+    # Count occurrences of each color after multiplying by 255 and rounding to 0 decimal points
+    for color in color_tuples:
+        # Multiply by 255 and round to 0 decimal points
+        scaled_color = tuple(round(c * 255) for c in color)  
+        color_groups[scaled_color] += 1
+    global terrainColorsInHex
+    
+    for scaled_color, count in color_groups.items():
+        if count >= 20:
+            terrainColorsInHex.append(rgb_to_hex(scaled_color).strip())
+            #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
+            
+    addHexColorCodeGroupsToGUI(self)
+
+def getAttribMapWaterColors(self, node):
     node = node.geometry()
     color_attribute = node.pointFloatAttribValues("Cd")
     numCdComponents = 3  # RGB
