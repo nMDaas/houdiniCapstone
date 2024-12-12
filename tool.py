@@ -342,6 +342,25 @@ class MyWidget(QtWidgets.QWidget):
         # Connect the QLineEdit to a function for LOD changes
         self.ui.LODEntryBox.textChanged.connect(self.on_LOD_level_change)
 
+        self.ui.colorGridScrollArea.setVisible(False)
+        self.ui.original_image_button.setVisible(False)
+        self.ui.modified_image_button.setVisible(False)
+        self.ui.extrusion_button.setVisible(False)
+        self.ui.label1.setVisible(False)
+        self.ui.select_id_button.setVisible(False)
+        self.ui.reload_id_button.setVisible(False)
+        self.ui.idGridScrollArea.setVisible(False)
+        self.ui.texture_map_button.setVisible(False)
+        self.ui.texture_terrain_button.setVisible(False)
+        self.ui.LODsection.setVisible(False)
+        self.ui.LODEntryBox.setVisible(False)
+        self.ui.label2.setVisible(False)
+        self.ui.select_water_button.setVisible(False)
+        self.ui.reload_water_button.setVisible(False)
+        self.ui.waterGridScrollArea.setVisible(False)
+        self.ui.water_map_button.setVisible(False)
+        self.ui.water_geo_button.setVisible(False)
+
     def on_LOD_level_change(self):
         text = self.ui.LODEntryBox.text()
 
@@ -539,6 +558,13 @@ class MyWidget(QtWidgets.QWidget):
             print(f"Selected file: {filepath}")
             global filepaths
             filepaths.append(filepath)
+            self.ui.colorGridScrollArea.setVisible(True)
+            self.ui.original_image_button.setVisible(True)
+            self.ui.modified_image_button.setVisible(True)
+            self.ui.extrusion_button.setVisible(True)
+            self.ui.label1.setVisible(True)
+            self.ui.select_id_button.setVisible(True)
+            self.ui.reload_id_button.setVisible(True)
             self.apply()
 
     def selectTextureIDMap(self):
@@ -548,6 +574,14 @@ class MyWidget(QtWidgets.QWidget):
             print(f"Selected file: {filepath}")
             global filepaths
             filepaths.append(filepath)
+            self.ui.idGridScrollArea.setVisible(True)
+            self.ui.texture_map_button.setVisible(True)
+            self.ui.texture_terrain_button.setVisible(True)
+            self.ui.LODsection.setVisible(True)
+            self.ui.LODEntryBox.setVisible(True)
+            self.ui.label2.setVisible(True)
+            self.ui.select_water_button.setVisible(True)
+            self.ui.reload_water_button.setVisible(True)
             self.applyIdMap()
 
     def selectWaterMap(self):
@@ -557,6 +591,9 @@ class MyWidget(QtWidgets.QWidget):
             print(f"Selected file: {filepath}")
             global filepaths
             filepaths.append(filepath)
+            self.ui.waterGridScrollArea.setVisible(True)
+            self.ui.water_map_button.setVisible(True)
+            self.ui.water_geo_button.setVisible(True)
             self.applyWaterMap()
 
     def reload(self):
@@ -929,5 +966,6 @@ class ColorDisplayFrame(QtWidgets.QFrame):
 def show_widget():
     widget = MyWidget()
     widget.show()
+    
     
 show_widget()
