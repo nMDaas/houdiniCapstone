@@ -513,22 +513,7 @@ class MyWidget(QtWidgets.QWidget):
 
             """
 
-            # Create grid node in water node
-            n_waterGrid = n_water.createNode('grid', 'waterGrid')
-            hou.parm('/obj/water/terrainGrid/sizex').set(500)
-            hou.parm('/obj/water/terrainGrid/sizey').set(500)
-            hou.parm('/obj/water/terrainGrid/rows').set(150)
-            hou.parm('/obj/water/terrainGrid/cols').set(150)
-            n_waterGrid.setPosition(hou.Vector2(0, 0))  
             
-            # Create attribute from parameter node
-            global n_attribFromMap
-            n_attribFromMap = n_water.createNode('attribfrommap', 'attribfrommap')
-            hou.parm('/obj/water/attribfrommap/filename').set(filepaths[2])
-            hou.parm('/obj/water/attribfrommap/uv_invertv').set(1)
-            hou.parm('/obj/water/attribfrommap/srccolorspace').set("linear")
-            n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
-            n_attribFromMap.setInput(0, n_water)
 
             # Call getAttribMapColors with self - display different colors found and populate terrainColorsInHex
             getAttribMapWaterColors(self, n_attribFromMap)
@@ -598,6 +583,38 @@ class MyWidget(QtWidgets.QWidget):
         # Create water Geometry node
         OBJ = hou.node('/obj/')
         n_water = OBJ.createNode('geo', 'water')
+
+        # Create grid node in water node
+        n_waterGrid = n_water.createNode('grid', 'waterGrid')
+        hou.parm('/obj/water/waterGrid/sizex').set(500)
+        hou.parm('/obj/water/waterGrid/sizey').set(500)
+        hou.parm('/obj/water/waterGrid/rows').set(150)
+        hou.parm('/obj/water/waterGrid/cols').set(150)
+        n_waterGrid.setPosition(hou.Vector2(0, 0))  
+        
+        # Create attribute from parameter node
+        global n_attribFromMap
+        n_attribFromMap = n_water.createNode('attribfrommap', 'attribfrommap')
+        hou.parm('/obj/water/attribfrommap/filename').set(filepaths[2])
+        hou.parm('/obj/water/attribfrommap/uv_invertv').set(1)
+        hou.parm('/obj/water/attribfrommap/srccolorspace').set("linear")
+        n_attribFromMap.setPosition(hou.Vector2(0, -2)) 
+        n_attribFromMap.setInput(0, n_waterGrid)
+
+        getAttribMapWaterColors(self, n_attribFromMap)
+
+        # Create attribute wrangle node for each color
+        global g_waterColorsInHex
+        for i in range(len(g_waterColorsInHex)):
+            attrib_wrangle_name = 'attribwrangle' + str(i)
+            new_attrib_wrangle = n_water.createNode('attribwrangle', attrib_wrangle_name)
+            sectionHexColor = g_waterColorsInHex[i]
+            generateTerrainColorSectionExtractionVEXExpression(sectionHexColor)
+            vexExpression = loadVexString('/Users/natashadaas/houdiniCapstone/helperScripts/terrainColorSectionExtractionVexExpression.txt')
+            hou.parm(f'/obj/water/{new_attrib_wrangle}/snippet').set(vexExpression)
+            new_attrib_wrangle.setPosition(hou.Vector2(i,-4)) 
+            new_attrib_wrangle.setInput(0, n_attribFromMap)
+            id_part_wrangle_nodes.append(new_attrib_wrangle)
 
     def applyIdMap(self):
         OBJ = hou.node('/obj/')
@@ -731,41 +748,14 @@ def getAttribMapWaterColors(self, node):
     global g_waterColorsInHex
     
     for scaled_color, count in color_groups.items():
+        #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
         if count >= 20:
             g_waterColorsInHex.append(rgb_to_hex(scaled_color).strip())
-            #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
+            print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
             
-    #addHexColorCodeGroupsToGUI(self)
+    addWaterGroupsToGUI(self)
 
 def getAttribMapColors(self, node):
-    node = node.geometry()
-    color_attribute = node.pointFloatAttribValues("Cd")
-    numCdComponents = 3  # RGB
-
-    # Create a list of color_attribute grouped into RGB colors for each grid cell
-    color_tuples = [
-        tuple(color_attribute[i:i + numCdComponents])
-        for i in range(0, len(color_attribute), numCdComponents)
-    ]
-
-    # Dictionary to count occurrences of each scaled color
-    color_groups = defaultdict(int)
-    
-    # Count occurrences of each color after multiplying by 255 and rounding to 0 decimal points
-    for color in color_tuples:
-        # Multiply by 255 and round to 0 decimal points
-        scaled_color = tuple(round(c * 255) for c in color)  
-        color_groups[scaled_color] += 1
-    global terrainColorsInHex
-    
-    for scaled_color, count in color_groups.items():
-        if count >= 20:
-            terrainColorsInHex.append(rgb_to_hex(scaled_color).strip())
-            #print(f"Scaled Color: {scaled_color}, Count: {count}, Hex: {rgb_to_hex(scaled_color)}")
-            
-    addHexColorCodeGroupsToGUI(self)
-
-def getAttribMapWaterColors(self, node):
     node = node.geometry()
     color_attribute = node.pointFloatAttribValues("Cd")
     numCdComponents = 3  # RGB
