@@ -311,6 +311,8 @@ class MyWidget(QtWidgets.QWidget):
         self.ui.select_id_button.clicked.connect(self.selectTextureIDMap)
         self.ui.select_water_button.clicked.connect(self.selectWaterMap)
         self.ui.reload_water_button.clicked.connect(self.reload_water)
+        self.ui.texture_map_button.clicked.connect(self.showTextureIDMap)
+        self.ui.texture_terrain_button.clicked.connect(self.showTexturedTerrain)
         #self.ui.apply_id_button.clicked.connect(self.applyIdMap)
 
         # Connect the QLineEdit to a function for LOD changes
@@ -565,6 +567,21 @@ class MyWidget(QtWidgets.QWidget):
 
     def showExtrusion(self):
         hou.node('/obj/terrain_height/polyextrude').setDisplayFlag(True)
+    def showTextureIDMap(self):
+        print("trying to show texture id map")
+        hou.node('/obj/terrain_texture').setDisplayFlag(False)
+        hou.node('/obj/id').setDisplayFlag(True)
+        #hou.node('/obj/id/id_attribfrommap').setDisplayFlag(True)
+
+    def showTexturedTerrain(self):
+        print("trying to show texture terain")
+        hou.node('/obj/terrain_texture').setDisplayFlag(True)
+        hou.node('/obj/id').setDisplayFlag(False)
+        #hou.node('/obj/id/').setDisplayFlag(False)
+        #hou.node('/obj/terrain_texture/polyreduce').setDisplayFlag(True)
+
+    def reload_water(self):
+        print("trying to reload water")
 
     def applyWaterMap(self):
         # Create water Geometry node
@@ -706,6 +723,8 @@ class MyWidget(QtWidgets.QWidget):
 
         # add id colors to UI based on texture id map
         addIDGroupsToGUI(self)
+
+        hou.node('/obj/id/id_attribfrommap').setDisplayFlag(True)
 
 def getIDAttribMapColors(self, node):
     node = node.geometry()
