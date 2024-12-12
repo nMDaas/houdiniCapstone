@@ -57,7 +57,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>90</y>
+                    <y>40</y>
                     <width>500</width>
                     <height>100</height>
                 </rect>
@@ -66,7 +66,7 @@
                 <item>
                     <widget class="QLabel" name="simpleTextLabel">
                         <property name="text">
-                            <string>Edit Colors: </string>
+                            <string>Edit Height Map: </string>
                         </property>
                     </widget>
                 </item>
@@ -77,9 +77,9 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>160</y>
-                    <width>361</width>
-                    <height>150</height>
+                    <y>110</y>
+                    <width>380</width>
+                    <height>130</height>
                 </rect>
             </property>
             <property name="widgetResizable">
@@ -105,7 +105,7 @@
             <property name="geometry">
                 <rect>
                     <x>30</x>
-                    <y>320</y>
+                    <y>250</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
@@ -119,7 +119,7 @@
             <property name="geometry">
                 <rect>
                     <x>160</x>
-                    <y>320</y>
+                    <y>250</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
@@ -133,7 +133,7 @@
             <property name="geometry">
                 <rect>
                     <x>290</x>
-                    <y>320</y>
+                    <y>250</y>
                     <width>120</width>
                     <height>32</height>
                 </rect>
