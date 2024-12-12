@@ -1,6 +1,6 @@
-float targetR = 0.5843137254901961;
-float targetG = 0.5843137254901961;
-float targetB = 0.5843137254901961;
+float targetR = 0.6352941176470588;
+float targetG = 0.8;
+float targetB = 0.8941176470588236;
 float differenceR = @Cd.r - targetR;
 float differenceG = @Cd.g - targetG;
 float differenceB = @Cd.b - targetB;

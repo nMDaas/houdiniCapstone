@@ -283,12 +283,11 @@ class MyWidget(QtWidgets.QWidget):
         
         # Connect buttons to functions
         self.ui.select_button.clicked.connect(self.selectHeightMap)
-        self.ui.apply_button.clicked.connect(self.apply)
         self.ui.reload_button.clicked.connect(self.reload)
         self.ui.original_image_button.clicked.connect(self.showOriginalImage)
         self.ui.modified_image_button.clicked.connect(self.showModifiedImage)
         self.ui.extrusion_button.clicked.connect(self.showExtrusion)
-        self.ui.select_id_button.clicked.connect(self.selectMap)
+        self.ui.select_id_button.clicked.connect(self.selectHeightMap)
         self.ui.apply_id_button.clicked.connect(self.applyIdMap)
 
         # Connect the QLineEdit to a function for LOD changes
