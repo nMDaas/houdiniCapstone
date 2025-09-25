@@ -56,3 +56,8 @@ Output:
 
 ## External Resources Used
 - Inspired by Elyssa Chou's Terrain from Image Generator
+
+## Future Goals
+- Look into how this workflow can support tiling environments to build large scale landscapes
+- Enable user to add custom textures
+- Look into texture blending workflows 
