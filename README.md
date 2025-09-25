@@ -23,36 +23,36 @@ https://www.youtube.com/watch?v=FRj5c_c1SnM
 <img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toolWorkflow.png" width="500px" height=auto>
 </p>
 
-### Workflow for Terrain Elevation 
-<p align="left">
-<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/terrainWorkflow.png" object-fit="contain" width="500px" height="300px">
-</p>
-
-<p align="left">
-<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toutput1.png" object-fit="contain" width="500px" height="300px">
-</p>
-
-<p align="left">
-<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toutput2.png" object-fit="contain" width="500px" height="300px">
-</p>
-
 ## Tool Output Breakdown
 
 <p align="left">
 <img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/breakdown1.png" object-fit="contain" width="500px" height="300px">
-</p>
-<p align="left">
 <img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/breakdown2.png" object-fit="contain" width="500px" height="300px">
 </p>
 <p align="left">
 <img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/breakdown3.png" object-fit="contain" width="500px" height="300px">
 </p>
 
+### Workflow for Terrain Elevation 
+Breakdown:
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/terrainWorkflow.png" object-fit="contain" width="500px" height="300px">
+</p>
+
+Output:
+
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toutput1.png" object-fit="contain" width="500px" height="300px">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toutput2.png" object-fit="contain" width="500px" height="300px">
+</p>
+
 ## Unity Setup With Textures & Foliage
 <img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/unityWorkflow.png" object-fit="contain" width="500px" height="300px">
 
 ## How to Use
-- in houdini and then import to Unity
+- Use the tool.py file to create a shelf tool in Houdini
+- After generating the terrain, export it as an obj
+- To import into Unity and use custom terrain with Terrain Tools Package: https://www.lmhpoly.com/tutorials/convert-mesh-to-unity-terrain 
 
 ## External Resources Used
-
+- Inspired by Elyssa Chou's Terrain from Image Generator
