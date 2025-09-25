@@ -13,29 +13,43 @@ This tool addresses these issues, providing accessibility to people who don’t 
 * Integrated height, surface detail, and water map inputs, enabling artists to define terrain elevation, surface characteristics, and water visualization for more deliberate, gameplay-driven terrain generation.
 * Prepared terrains for OBJ export with adjustable LOD, enabling seamless integration into Unity’s Terrain Tools workflow for standard texturing, material assignment, and foliage placement.
 
-## Development & Implementation Process
-This tool was designed iteratively to ensure usability and user-focused. Throughout different stages of the capstone, I received feedback from target users (Unity experience, no Houdini experience) that shaped the design, features and experience of the tool.
-
-<p align="left">
-<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/devProcess.png" object-fit="contain" width="500px" height="300px">
-</p>
+## Demo
+https://www.youtube.com/watch?v=FRj5c_c1SnM 
 
 ## Tool Workflow
-Map-driven step-by-step workflow
 
+### Overall Map-Driven Workflow
 <p align="left">
-<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toolWorkflow.png" object-fit="contain" width="500px" height="300px">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toolWorkflow.png" width="500px" height=auto>
 </p>
 
-## Terrain Generation Workflow w/ map, Output Examples
+### Workflow for Terrain Elevation 
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/terrainWorkflow.png" object-fit="contain" width="500px" height="300px">
+</p>
 
-## Surface Detailing Workflow w/ map
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toutput1.png" object-fit="contain" width="500px" height="300px">
+</p>
 
-## Results
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/toutput2.png" object-fit="contain" width="500px" height="300px">
+</p>
 
-## Results Breakdown
+## Tool Output Breakdown
+
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/breakdown1.png" object-fit="contain" width="500px" height="300px">
+</p>
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/breakdown2.png" object-fit="contain" width="500px" height="300px">
+</p>
+<p align="left">
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/breakdown3.png" object-fit="contain" width="500px" height="300px">
+</p>
 
 ## Unity Setup With Textures & Foliage
+<img src="https://github.com/nMDaas/houdiniCapstone/blob/main/readmeContent/unityWorkflow.png" object-fit="contain" width="500px" height="300px">
 
 ## How to Use
 - in houdini and then import to Unity
